@@ -1,7 +1,6 @@
 package com.github.mmdemirbas.oncalls;
 
 import lombok.Value;
-import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -12,22 +11,11 @@ import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 /**
  * @author Muhammed Demirbaş
  * @since 2018-11-16 18:31
  */
 public final class DesignTest {
-    @Test
-    public void rangeContains() {
-        Range<Integer> range = new Range<>(1, 3);
-        assertFalse(range.covers(0));
-        assertTrue(range.covers(1));
-        assertTrue(range.covers(2));
-        assertFalse(range.covers(3));
-    }
 
     // todo: implement Rotation.toFixedTimeline() for a FixedRange
     // todo: implement applyForwarding()
@@ -135,21 +123,4 @@ public final class DesignTest {
     public static final class RecurringRange {
         Range<Instant> ranges;
     }
-
-    @Value
-    public static final class Range<T extends Comparable<? super T>> implements Comparable<Range<T>> {
-        T startInclusive;
-        T endExclusive;
-
-        public boolean covers(T point) {
-            return (startInclusive.compareTo(point) <= 0) && (point.compareTo(endExclusive) < 0);
-        }
-
-        @Override
-        public int compareTo(Range<T> o) {
-            int cmp = startInclusive.compareTo(o.startInclusive);
-            return (cmp == 0) ? endExclusive.compareTo(o.endExclusive) : cmp;
-        }
-    }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
