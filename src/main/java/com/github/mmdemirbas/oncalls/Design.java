@@ -17,110 +17,62 @@ import java.util.Set;
  */
 public final class Design {
 
-    // todo: implement Rotation.toFixedTimeline() for a FixedRange
+    // todo: implement Rotation.toFixedTimeline() for a Range<ZonedDateTime>
     // todo: implement applyForwarding()
     // todo: implement applyOverrides()
 
     @Value
     public static final class Schedule<V> {
-        Collection<Rotation<V>> rotations;
-        FixedPatch<V>           globalPatches;
+        Collection<Rotation<V>>   rotations;
+        Patches<ZonedDateTime, V> globalPatches;
     }
 
     @Value
     public static final class Rotation<V> {
-        Recurrence        recurrence;
-        List<V>           recurringRecipients;
-        RecurringPatch<V> recurringPatches;
-        FixedPatch<V>     fixedPatches;
+        Recurrence                recurrence;
+        List<V>                   recurringRecipients;
+        Patches<Instant, V>       recurringPatches;
+        Patches<ZonedDateTime, V> fixedPatches;
     }
 
     @Value
     public static final class Recurrence {
-        FixedRange      range;
-        Duration        period;
-        RecurringRanges subRanges;
+        Range<ZonedDateTime> range;
+        Duration             period;
+        Ranges<Instant>      subRanges;
     }
 
     @Value
-    public static final class FixedPatch<V> {
-        FixedForwardings<V> forwardings;
-        FixedEvents<V>      overrides;
+    public static final class Patches<Time extends Comparable<? super Time>, V> {
+        Forwardings<Time, V> forwardings;
+        Events<Time, V>      overrides;
     }
 
     @Value
-    public static final class RecurringPatch<V> {
-        RecurringForwardings<V> forwardings;
-        RecurringEvents<V>      overrides;
+    public static final class Forwardings<Time extends Comparable<? super Time>, V> {
+        Set<Forwarding<Time, V>> forwardings;
     }
 
     @Value
-    public static final class FixedForwardings<V> {
-        Set<FixedForwarding<V>> forwardings;
+    public static final class Events<Time extends Comparable<? super Time>, V> {
+        NavigableMap<Time, List<Event<Time, V>>> index;
     }
 
     @Value
-    public static final class RecurringForwardings<V> {
-        Set<RecurringForwarding<V>> forwardings;
+    public static final class Ranges<Time extends Comparable<? super Time>> {
+        NavigableSet<Range<Time>> ranges;
     }
 
     @Value
-    public static final class FixedForwarding<V> {
-        FixedRanges   when;
-        Forwarding<V> forwarding;
+    public static final class Forwarding<Time extends Comparable<? super Time>, V> {
+        Ranges<Time> when;
+        V            forwarder;
+        V            forwardedTo;
     }
 
     @Value
-    public static final class RecurringForwarding<V> {
-        RecurringRanges when;
-        Forwarding<V>   forwarding;
-    }
-
-    @Value
-    public static final class Forwarding<V> {
-        V forwarder;
-        V forwardedTo;
-    }
-
-    @Value
-    public static final class FixedEvents<V> {
-        NavigableMap<ZonedDateTime, List<FixedEvent<V>>> index;
-    }
-
-    @Value
-    public static final class RecurringEvents<V> {
-        NavigableMap<Instant, List<RecurringEvent<V>>> index;
-    }
-
-    @Value
-    public static final class FixedEvent<V> {
-        FixedRange when;
-        V          what;
-    }
-
-    @Value
-    public static final class RecurringEvent<V> {
-        RecurringRange when;
-        V              what;
-    }
-
-    @Value
-    public static final class FixedRanges {
-        NavigableSet<FixedRange> ranges;
-    }
-
-    @Value
-    public static final class RecurringRanges {
-        NavigableSet<RecurringRange> ranges;
-    }
-
-    @Value
-    public static final class FixedRange {
-        Range<ZonedDateTime> ranges;
-    }
-
-    @Value
-    public static final class RecurringRange {
-        Range<Instant> ranges;
+    public static final class Event<Time extends Comparable<? super Time>, V> {
+        Range<Time> when;
+        V           what;
     }
 }
