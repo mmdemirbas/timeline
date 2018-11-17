@@ -2,45 +2,75 @@ package com.github.mmdemirbas.oncalls;
 
 import lombok.Value;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableNavigableSet;
+
 /**
+ * Represents a disjoint set of {@link Range}s.
+ * <p>
+ * Note that the overlapping and successive ranges will be merged into one range
+ * when constructing a {@link Ranges} object to ensure all the underlying {@link Range}s
+ * are disjoint.
+ *
  * @author Muhammed Demirbaş
  * @since 2018-11-17 16:16
  */
 @Value
 public final class Ranges<T extends Comparable<? super T>> {
-    private final NavigableSet<Range<T>> ranges;
+    private final NavigableSet<Range<T>> disjointRanges;
 
-    public Ranges(Collection<Range<T>> ranges) {
-        this.ranges = Collections.unmodifiableNavigableSet(combine(ranges));
+    @SafeVarargs
+    public static <T extends Comparable<? super T>> Ranges<T> of(Range<T>... ranges) {
+        return new Ranges<>(asList(ranges));
     }
 
-    private static <T extends Comparable<? super T>> NavigableSet<Range<T>> combine(Collection<Range<T>> ranges) {
-        NavigableSet<Range<T>> combined = new TreeSet<>();
-        T                      start    = null;
-        T                      end      = null;
+    public static <T extends Comparable<? super T>> Ranges<T> of(Collection<Range<T>> ranges) {
+        return new Ranges<>(ranges);
+    }
 
-        for (Range<T> range : new TreeSet<>(ranges)) {
-            T nextStart = range.getStartInclusive();
-            T nextEnd   = range.getEndExclusive();
-            if (start == null) {
-                // first
-                start = nextStart;
-                end = nextEnd;
-            } else if (end.compareTo(nextStart) < 0) {
-                combined.add(new Range<>(start, end));
-                start = nextStart;
-                end = nextEnd;
-            } else if (end.compareTo(nextEnd) < 0) {
-                // overlapping of successive
-                end = nextEnd;
+    private Ranges(Collection<Range<T>> ranges) {
+        NavigableSet<Range<T>> disjointRanges = new TreeSet<>();
+        if (!ranges.isEmpty()) {
+            List<Range<T>> list = new ArrayList<>(ranges);
+            list.sort(Comparator.comparing(Range::getStartInclusive));
+
+            Iterator<Range<T>> it      = list.iterator();
+            Range<T>           current = nextOrNull(it);
+            Range<T>           next    = nextOrNull(it);
+
+            while (next != null) {
+                T currentEnd = current.getEndExclusive();
+                if (currentEnd.compareTo(next.getStartInclusive()) < 0) {
+                    disjointRanges.add(current);
+                } else {
+                    do {
+                        if (currentEnd.compareTo(next.getEndExclusive()) < 0) {
+                            currentEnd = next.getEndExclusive();
+                        }
+                        next = nextOrNull(it);
+                    } while ((next != null) && (currentEnd.compareTo(next.getStartInclusive()) >= 0));
+                    disjointRanges.add(Range.of(current.getStartInclusive(), currentEnd));
+                }
+                current = next;
+                next = nextOrNull(it);
+            }
+
+            if (current != null) {
+                disjointRanges.add(current);
             }
         }
-        combined.add(new Range<>(start, end));
-        return combined;
+        this.disjointRanges = unmodifiableNavigableSet(disjointRanges);
+    }
+
+    private static <T> T nextOrNull(Iterator<? extends T> iterator) {
+        return iterator.hasNext() ? iterator.next() : null;
     }
 }
