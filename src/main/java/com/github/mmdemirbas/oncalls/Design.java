@@ -8,7 +8,6 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.NavigableMap;
-import java.util.NavigableSet;
 import java.util.Set;
 
 /**
@@ -59,13 +58,8 @@ public final class Design {
     }
 
     @Value
-    public static final class Ranges<Time extends Comparable<? super Time>> {
-        NavigableSet<Range<Time>> ranges;
-    }
-
-    @Value
     public static final class Forwarding<Time extends Comparable<? super Time>, V> {
-        Ranges<Time> when;
+        Range<Time> when;
         V            forwarder;
         V            forwardedTo;
     }
