@@ -15,7 +15,7 @@ import java.util.Set;
  * @author Muhammed Demirbaş
  * @since 2018-11-16 18:31
  */
-public final class DesignTest {
+public final class Design {
 
     // todo: implement Rotation.toFixedTimeline() for a FixedRange
     // todo: implement applyForwarding()
