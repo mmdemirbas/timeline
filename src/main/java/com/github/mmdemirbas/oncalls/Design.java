@@ -32,11 +32,10 @@ public final class Design {
         Patches<ZonedDateTime, V> fixedPatches;
     }
 
-
     @Value
-    public static final class Patches<Time extends Comparable<? super Time>, V> {
-        Timeline<Time, Forwarding<V>> forwardings;
-        Timeline<Time, V>             overrides;
+    public static final class Patches<Point extends Comparable<? super Point>, V> {
+        EventLine<Point, Forwarding<V>> forwardings;
+        EventLine<Point, V>             overrides;
     }
 
     @Value
@@ -51,5 +50,4 @@ public final class Design {
         Duration             period;
         Ranges<Instant>      subRanges;
     }
-
 }

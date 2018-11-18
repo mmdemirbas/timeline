@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Muhammed Demirbaş
  * @since 2018-11-18 10:33
  */
-public final class TimelineTest {
+public final class EventLineTest {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,9 +68,9 @@ public final class TimelineTest {
     }
 
     private static void assertIntervalMap(List<Entry<Integer, List<Event<Integer, String>>>> expected,
-                                          List<Event<Integer, String>> events) {
-        Timeline<Integer, String> timeline = Timeline.of(events);
-        assertEquals(mapOf(expected), timeline.getIntervalMap());
+                                          Iterable<Event<Integer, String>> events) {
+        EventLine<Integer, String> eventLine = EventLine.of(events);
+        assertEquals(mapOf(expected), eventLine.getIntervalMap());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -24,18 +24,18 @@ import static java.util.Collections.unmodifiableNavigableMap;
  */
 @ToString
 @EqualsAndHashCode
-public final class Timeline<Point extends Comparable<? super Point>, Value> {
+public final class EventLine<Point extends Comparable<? super Point>, Value> {
     @Getter private final NavigableMap<Point, List<Event<Point, Value>>> intervalMap;
 
-    public static <Point extends Comparable<? super Point>, Value> Timeline<Point, Value> of(Event<Point, Value>... events) {
-        return new Timeline<>(asList(events));
+    public static <Point extends Comparable<? super Point>, Value> EventLine<Point, Value> of(Event<Point, Value>... events) {
+        return new EventLine<>(asList(events));
     }
 
-    public static <Point extends Comparable<? super Point>, Value> Timeline<Point, Value> of(Iterable<Event<Point, Value>> events) {
-        return new Timeline<>(events);
+    public static <Point extends Comparable<? super Point>, Value> EventLine<Point, Value> of(Iterable<Event<Point, Value>> events) {
+        return new EventLine<>(events);
     }
 
-    private Timeline(Iterable<Event<Point, Value>> events) {
+    private EventLine(Iterable<Event<Point, Value>> events) {
         intervalMap = unmodifiableNavigableMap(buildIntervalMap(events));
     }
 
@@ -54,7 +54,7 @@ public final class Timeline<Point extends Comparable<? super Point>, Value> {
                         .add(new EventChange<>(event, false));
         });
 
-        // then, build the interval map using a sweep line algorithm on the detectec change points
+        // then, build the interval map using a sweep line algorithm on the detected change points
         NavigableMap<Point, List<Event<Point, Value>>> intervalMap   = new TreeMap<>();
         List<Event<Point, Value>>                      ongoingEvents = new ArrayList<>();
         changePoints.forEach((point, changes) -> {
