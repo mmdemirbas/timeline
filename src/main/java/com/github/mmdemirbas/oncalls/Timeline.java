@@ -5,44 +5,47 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableNavigableMap;
 
 /**
+ * Represents an ordered line of {@link Event}s.
+ * This is a generalization of timeline of events.
+ * <p>
+ * This class is immutable if the generic types {@link Point} and {@link Value} is immutable.
+ *
  * @author Muhammed Demirbaş
  * @since 2018-11-18 09:55
  */
 @ToString
 @EqualsAndHashCode
-public final class Timeline<Point extends Comparable<? super Point>, V> {
-    @Getter private final NavigableMap<Point, List<Event<Point, V>>> intervalMap;
+public final class Timeline<Point extends Comparable<? super Point>, Value> {
+    @Getter private final NavigableMap<Point, List<Event<Point, Value>>> intervalMap;
 
-    public Timeline(Iterable<Event<Point, V>> events) {
-        intervalMap = indexIntervals(events);
+    public static <Point extends Comparable<? super Point>, Value> Timeline<Point, Value> of(Event<Point, Value>... events) {
+        return new Timeline<>(asList(events));
     }
 
-    private NavigableMap<Point, List<Event<Point, V>>> indexIntervals(Iterable<Event<Point, V>> events) {
-        NavigableMap<Point, List<Event<Point, V>>> index         = new TreeMap<>();
-        List<Event<Point, V>>                      currentEvents = new ArrayList<>();
-        indexChangePoints(events).forEach((point, changes) -> {
-            changes.forEach(change -> {
-                if (change.started) {
-                    currentEvents.add(change.event);
-                } else {
-                    currentEvents.remove(change.event);
-                }
-            });
-            index.put(point, Collections.unmodifiableList(new ArrayList<>(currentEvents)));
-        });
-        return unmodifiableNavigableMap(index);
+    public static <Point extends Comparable<? super Point>, Value> Timeline<Point, Value> of(Iterable<Event<Point, Value>> events) {
+        return new Timeline<>(events);
     }
 
-    private NavigableMap<Point, List<EventChange<Point, V>>> indexChangePoints(Iterable<Event<Point, V>> events) {
-        NavigableMap<Point, List<EventChange<Point, V>>> changePoints = new TreeMap<>();
+    private Timeline(Iterable<Event<Point, Value>> events) {
+        intervalMap = unmodifiableNavigableMap(buildIntervalMap(events));
+    }
+
+    /**
+     * Builds an interval map which can be considered as another form of an "interval tree".
+     */
+    private static <Point extends Comparable<? super Point>, Value> NavigableMap<Point, List<Event<Point, Value>>> buildIntervalMap(
+            Iterable<Event<Point, Value>> events) {
+        // firstly, detect change points and which changes occur at each point
+        NavigableMap<Point, List<EventChange<Point, Value>>> changePoints = new TreeMap<>();
         events.forEach(event -> {
             Range<Point> range = event.getRange();
             changePoints.computeIfAbsent(range.getStartInclusive(), x -> new ArrayList<>())
@@ -50,7 +53,21 @@ public final class Timeline<Point extends Comparable<? super Point>, V> {
             changePoints.computeIfAbsent(range.getEndExclusive(), x -> new ArrayList<>())
                         .add(new EventChange<>(event, false));
         });
-        return changePoints;
+
+        // then, build the interval map using a sweep line algorithm on the detectec change points
+        NavigableMap<Point, List<Event<Point, Value>>> intervalMap   = new TreeMap<>();
+        List<Event<Point, Value>>                      ongoingEvents = new ArrayList<>();
+        changePoints.forEach((point, changes) -> {
+            changes.forEach(change -> {
+                if (change.started) {
+                    ongoingEvents.add(change.event);
+                } else {
+                    ongoingEvents.remove(change.event);
+                }
+            });
+            intervalMap.put(point, unmodifiableList(new ArrayList<>(ongoingEvents)));
+        });
+        return intervalMap;
     }
 
     private static final class EventChange<Point extends Comparable<? super Point>, V> {

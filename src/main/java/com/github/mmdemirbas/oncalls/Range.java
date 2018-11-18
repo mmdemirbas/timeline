@@ -11,16 +11,16 @@ import lombok.ToString;
  *     new Range<>(20, 80) => [20,80)
  * </pre>
  * <p>
- * This class is immutable if the {@code T} type is immutable.
+ * This class is immutable if the generic type {@link Point} is immutable.
  *
  * @author Muhammed Demirbaş
  * @since 2018-11-17 11:55
  */
 @ToString
 @EqualsAndHashCode
-public final class Range<T extends Comparable<? super T>> implements Comparable<Range<T>> {
-    @Getter private final T startInclusive;
-    @Getter private final T endExclusive;
+public final class Range<Point extends Comparable<? super Point>> implements Comparable<Range<Point>> {
+    @Getter private final Point startInclusive;
+    @Getter private final Point endExclusive;
 
     /**
      * Creates a {@link Range} from the given start and end points.
@@ -31,7 +31,7 @@ public final class Range<T extends Comparable<? super T>> implements Comparable<
         return new Range<>(startInclusive, endExclusive);
     }
 
-    private Range(T startInclusive, T endExclusive) {
+    private Range(Point startInclusive, Point endExclusive) {
         if (startInclusive.compareTo(endExclusive) > 0) {
             throw new IllegalArgumentException(String.format("start must be <= end, but was: %s > %s",
                                                              startInclusive,
@@ -45,12 +45,12 @@ public final class Range<T extends Comparable<? super T>> implements Comparable<
      * Returns {@code true} if and only if the given {@code point} is a member of this {@code Range}.
      * Note that the endpoint of the range is NOT considered as a member.
      */
-    public boolean covers(T point) {
+    public boolean covers(Point point) {
         return (startInclusive.compareTo(point) <= 0) && (point.compareTo(endExclusive) < 0);
     }
 
     @Override
-    public int compareTo(Range<T> o) {
+    public int compareTo(Range<Point> o) {
         int cmp = startInclusive.compareTo(o.startInclusive);
         return (cmp == 0) ? endExclusive.compareTo(o.endExclusive) : cmp;
     }

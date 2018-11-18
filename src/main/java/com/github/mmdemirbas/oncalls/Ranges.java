@@ -18,19 +18,19 @@ import static java.util.Collections.unmodifiableNavigableSet;
 /**
  * Represents a disjoint set of {@link Range}s.
  * <p>
- * Note that the overlapping and successive ranges will be merged into one range
- * when constructing a {@link Ranges} object to ensure all the underlying {@link Range}s
+ * Note that the intersecting, overlapping and successive ranges will be merged into one range
+ * when constructing a {@link Ranges} object, to ensure all the underlying {@link Range}s
  * are disjoint.
  * <p>
- * This class is immutable if the {@code T} type is immutable.
+ * This class is immutable if the generic type {@link Point} is immutable.
  *
  * @author Muhammed Demirbaş
  * @since 2018-11-17 16:16
  */
 @ToString
 @EqualsAndHashCode
-public final class Ranges<T extends Comparable<? super T>> {
-    @Getter private final NavigableSet<Range<T>> disjointRanges;
+public final class Ranges<Point extends Comparable<? super Point>> {
+    @Getter private final NavigableSet<Range<Point>> disjointRanges;
 
     @SafeVarargs
     public static <T extends Comparable<? super T>> Ranges<T> of(Range<T>... ranges) {
@@ -41,18 +41,25 @@ public final class Ranges<T extends Comparable<? super T>> {
         return new Ranges<>(ranges);
     }
 
-    private Ranges(Collection<Range<T>> ranges) {
-        NavigableSet<Range<T>> disjointRanges = new TreeSet<>();
+    private Ranges(Collection<Range<Point>> ranges) {
+        disjointRanges = unmodifiableNavigableSet(toDisjointRanges(ranges));
+    }
+
+    /**
+     * Returns a set of disjoint {@link Range}s joining intersecting, overlapping and successive ranges.
+     */
+    private static <Point extends Comparable<? super Point>> NavigableSet<Range<Point>> toDisjointRanges(Collection<Range<Point>> ranges) {
+        NavigableSet<Range<Point>> disjointRanges = new TreeSet<>();
         if (!ranges.isEmpty()) {
-            List<Range<T>> list = new ArrayList<>(ranges);
+            List<Range<Point>> list = new ArrayList<>(ranges);
             list.sort(Comparator.comparing(Range::getStartInclusive));
 
-            Iterator<Range<T>> it      = list.iterator();
-            Range<T>           current = nextOrNull(it);
-            Range<T>           next    = nextOrNull(it);
+            Iterator<Range<Point>> it      = list.iterator();
+            Range<Point>           current = nextOrNull(it);
+            Range<Point>           next    = nextOrNull(it);
 
             while (next != null) {
-                T currentEnd = current.getEndExclusive();
+                Point currentEnd = current.getEndExclusive();
                 if (currentEnd.compareTo(next.getStartInclusive()) < 0) {
                     disjointRanges.add(current);
                 } else {
@@ -72,7 +79,7 @@ public final class Ranges<T extends Comparable<? super T>> {
                 disjointRanges.add(current);
             }
         }
-        this.disjointRanges = unmodifiableNavigableSet(disjointRanges);
+        return disjointRanges;
     }
 
     private static <T> T nextOrNull(Iterator<? extends T> iterator) {
