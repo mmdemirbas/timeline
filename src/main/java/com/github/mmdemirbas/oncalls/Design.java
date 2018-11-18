@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.NavigableMap;
 
 /**
  * @author Muhammed Demirbaş
@@ -33,17 +32,11 @@ public final class Design {
         Patches<ZonedDateTime, V> fixedPatches;
     }
 
-    @Value
-    public static final class Recurrence {
-        Range<ZonedDateTime> range;
-        Duration             period;
-        Ranges<Instant>      subRanges;
-    }
 
     @Value
     public static final class Patches<Time extends Comparable<? super Time>, V> {
-        Events<Time, Forwarding<V>> forwardings;
-        Events<Time, V>             overrides;
+        Timeline<Time, Forwarding<V>> forwardings;
+        Timeline<Time, V>             overrides;
     }
 
     @Value
@@ -53,13 +46,10 @@ public final class Design {
     }
 
     @Value
-    public static final class Events<Time extends Comparable<? super Time>, V> {
-        NavigableMap<Time, List<Event<Time, V>>> index;
+    public static final class Recurrence {
+        Range<ZonedDateTime> range;
+        Duration             period;
+        Ranges<Instant>      subRanges;
     }
 
-    @Value
-    public static final class Event<Time extends Comparable<? super Time>, V> {
-        Range<Time> when;
-        V           what;
-    }
 }

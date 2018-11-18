@@ -60,6 +60,11 @@ final class RangeTest {
         assertCovers(false, Range.of(1, 3), 4);
     }
 
+    @Test
+    void covers_EmptyRange() {
+        assertCovers(false, Range.of(1, 1), 1);
+    }
+
     private static void assertCovers(boolean expected, Range<Integer> range, int testPoint) {
         assertEquals(expected, range.covers(testPoint));
     }
@@ -94,6 +99,11 @@ final class RangeTest {
     @Test
     void compareTo_Equal() {
         assertCompareTo(0, Range.of(1, 3), Range.of(1, 3));
+    }
+
+    @Test
+    void compareTo_EmptyRange() {
+        assertCompareTo(-1, Range.of(1, 1), Range.of(2, 2));
     }
 
     private static void assertCompareTo(int expected, Range<Integer> left, Range<Integer> right) {

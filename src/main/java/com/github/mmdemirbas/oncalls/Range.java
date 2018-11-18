@@ -1,6 +1,8 @@
 package com.github.mmdemirbas.oncalls;
 
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Represents a range between two {@link Comparable} types with an inclusive start point
@@ -14,10 +16,11 @@ import lombok.Value;
  * @author Muhammed Demirbaş
  * @since 2018-11-17 11:55
  */
-@Value
+@ToString
+@EqualsAndHashCode
 public final class Range<T extends Comparable<? super T>> implements Comparable<Range<T>> {
-    T startInclusive;
-    T endExclusive;
+    @Getter private final T startInclusive;
+    @Getter private final T endExclusive;
 
     /**
      * Creates a {@link Range} from the given start and end points.
@@ -25,15 +28,15 @@ public final class Range<T extends Comparable<? super T>> implements Comparable<
      * @throws IllegalArgumentException if {@code endExclusive < startInclusive}
      */
     public static <T extends Comparable<? super T>> Range<T> of(T startInclusive, T endExclusive) {
+        return new Range<>(startInclusive, endExclusive);
+    }
+
+    private Range(T startInclusive, T endExclusive) {
         if (startInclusive.compareTo(endExclusive) > 0) {
             throw new IllegalArgumentException(String.format("start must be <= end, but was: %s > %s",
                                                              startInclusive,
                                                              endExclusive));
         }
-        return new Range<>(startInclusive, endExclusive);
-    }
-
-    private Range(T startInclusive, T endExclusive) {
         this.startInclusive = startInclusive;
         this.endExclusive = endExclusive;
     }

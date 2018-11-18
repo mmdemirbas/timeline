@@ -17,32 +17,32 @@ final class RangesTest {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
-    void of_NoRange() {
+    void getDisjointRanges_NoRange() {
         assertDisjointRanges(asList(), Ranges.of());
     }
 
     @Test
-    void of_SingleRange() {
+    void getDisjointRanges_SingleRange() {
         assertDisjointRanges(asList(Range.of(2, 4)), Ranges.of(Range.of(2, 4)));
     }
 
     @Test
-    void of_DisjointRanges() {
+    void getDisjointRanges_DisjointRanges() {
         assertDisjointRanges(asList(Range.of(2, 4), Range.of(8, 10)), Ranges.of(Range.of(2, 4), Range.of(8, 10)));
     }
 
     @Test
-    void of_SuccessiveRanges() {
+    void getDisjointRanges_SuccessiveRanges() {
         assertDisjointRanges(asList(Range.of(2, 8)), Ranges.of(Range.of(2, 4), Range.of(4, 8)));
     }
 
     @Test
-    void of_IntersectingRanges() {
+    void getDisjointRanges_IntersectingRanges() {
         assertDisjointRanges(asList(Range.of(2, 8)), Ranges.of(Range.of(2, 6), Range.of(4, 8)));
     }
 
     @Test
-    void of_OverlappingRanges() {
+    void getDisjointRanges_OverlappingRanges() {
         assertDisjointRanges(asList(Range.of(2, 8)), Ranges.of(Range.of(2, 8), Range.of(4, 6)));
     }
 

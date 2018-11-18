@@ -1,6 +1,8 @@
 package com.github.mmdemirbas.oncalls;
 
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,13 +21,16 @@ import static java.util.Collections.unmodifiableNavigableSet;
  * Note that the overlapping and successive ranges will be merged into one range
  * when constructing a {@link Ranges} object to ensure all the underlying {@link Range}s
  * are disjoint.
+ * <p>
+ * This class is immutable if the {@code T} type is immutable.
  *
  * @author Muhammed Demirbaş
  * @since 2018-11-17 16:16
  */
-@Value
+@ToString
+@EqualsAndHashCode
 public final class Ranges<T extends Comparable<? super T>> {
-    private final NavigableSet<Range<T>> disjointRanges;
+    @Getter private final NavigableSet<Range<T>> disjointRanges;
 
     @SafeVarargs
     public static <T extends Comparable<? super T>> Ranges<T> of(Range<T>... ranges) {
