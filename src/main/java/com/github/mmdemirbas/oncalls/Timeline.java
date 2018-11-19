@@ -77,16 +77,27 @@ public final class Timeline<Point extends Comparable<? super Point>, Value> {
         Point                 current      = nextOrNull(iterator);
         Point                 next         = nextOrNull(iterator);
 
+        List<U> bufferedValues = new ArrayList<>();
+        Point   bufferedStart  = null;
+
         while (next != null) {
             List<Value> left   = getValues(current);
             List<T>     right  = patchTimeline.getValues(current);
             List<U>     merged = merge.apply(left, right);
 
-            for (U u : merged) {
-                mergedEvents.add(new Event<>(u, Range.of(current, next)));
+            if (!bufferedValues.equals(merged)) {
+                for (U u : bufferedValues) {
+                    mergedEvents.add(new Event<>(u, Range.of(bufferedStart, current)));
+                }
+                bufferedValues = merged;
+                bufferedStart = current;
             }
+
             current = next;
             next = nextOrNull(iterator);
+        }
+        for (U u : bufferedValues) {
+            mergedEvents.add(new Event<>(u, Range.of(bufferedStart, current)));
         }
         return new Timeline<>(mergedEvents);
     }
