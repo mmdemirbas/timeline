@@ -21,45 +21,43 @@ final class TimelineTest {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
-    void getIntervalMap_NoEvents() {
+    void of_NoEvents() {
         assertIntervalMap(mapOf(), asList());
     }
 
     @Test
-    void getIntervalMap_SingleEvent_Empty() {
+    void of_SingleEvent_Empty() {
         assertIntervalMap(mapOf(), asList(interval(1, 1, "a")));
     }
 
     @Test
-    void getIntervalMap_SingleEvent_NonEmpty() {
+    void of_SingleEvent_NonEmpty() {
         assertIntervalMap(mapOf(pair(1, asList("a")), pair(3, asList())), asList(interval(1, 3, "a")));
     }
 
     @Test
-    void getIntervalMap_DisjointEvents() {
+    void of_DisjointEvents() {
         assertIntervalMap(mapOf(pair(1, asList("a")), pair(3, asList()), pair(5, asList("b")), pair(7, asList())),
                           asList(interval(1, 3, "a"), interval(5, 7, "b")));
     }
 
     @Test
-    void getIntervalMap_SuccessiveEvents() {
+    void of_SuccessiveEvents() {
         assertIntervalMap(mapOf(pair(1, asList("a")), pair(3, asList("b")), pair(5, asList())),
                           asList(interval(1, 3, "a"), interval(3, 5, "b")));
     }
 
     @Test
-    void getIntervalMap_IntersectingEvents() {
+    void of_IntersectingEvents() {
         assertIntervalMap(mapOf(pair(1, asList("a")),
-                                pair(3, asList("a", "b")),
-                                pair(5, asList("b")), pair(7, asList())),
+                                pair(3, asList("a", "b")), pair(5, asList("b")), pair(7, asList())),
                           asList(interval(1, 5, "a"), interval(3, 7, "b")));
     }
 
     @Test
-    void getIntervalMap_OverlappingEvents() {
+    void of_OverlappingEvents() {
         assertIntervalMap(mapOf(pair(1, asList("a")),
-                                pair(3, asList("a", "b")),
-                                pair(5, asList("a")), pair(7, asList())),
+                                pair(3, asList("a", "b")), pair(5, asList("a")), pair(7, asList())),
                           asList(interval(1, 7, "a"), interval(3, 5, "b")));
     }
 

@@ -34,9 +34,8 @@ final class RotationsTest {
     private static final Duration HOURLY    = Duration.ofHours(1);
     private static final Duration DAILY     = Duration.ofDays(1);
 
-
     @Test
-    void infiniteRotation_FullTest() throws Exception {
+    void infiniteRotation_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(HOURLY, "A", "B")),
                          asList(),
@@ -57,7 +56,7 @@ final class RotationsTest {
     }
 
     @Test
-    void onCallAtRotationEndTime() throws Exception {
+    void onCallAtRotationEndTime() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateUntil(min(3), HOURLY, "A", "B")),
                          asList(),
@@ -65,7 +64,7 @@ final class RotationsTest {
     }
 
     @Test
-    void onCallAtOverrideEndTimeWithoutRotation() throws Exception {
+    void onCallAtOverrideEndTimeWithoutRotation() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(),
                          asList(overrideBetween(min(1), min(3), "A")),
@@ -73,7 +72,7 @@ final class RotationsTest {
     }
 
     @Test
-    void rotationWithEndDateSmallerThan30Minutes_FullTest() throws Exception {
+    void rotationWithEndDateSmallerThan30Minutes_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateUntil(min(3), HOURLY, "A", "B", "C")),
                          asList(),
@@ -86,7 +85,7 @@ final class RotationsTest {
     }
 
     @Test
-    void rotationWithEndDateSmallerThan60Minutes_FullTest() throws Exception {
+    void rotationWithEndDateSmallerThan60Minutes_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateUntil(min(45), HOURLY, "A", "B", "C")),
                          asList(),
@@ -103,7 +102,7 @@ final class RotationsTest {
     }
 
     @Test
-    void rotationWithEndDateSmallerThan120Minutes_FullTest() throws Exception {
+    void rotationWithEndDateSmallerThan120Minutes_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateUntil(min(90), HOURLY, "A", "B", "C")),
                          asList(),
@@ -120,7 +119,7 @@ final class RotationsTest {
     }
 
     @Test
-    void overrideWithoutRotation_FullTest() throws Exception {
+    void overrideWithoutRotation_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(),
                          asList(overrideBetween(min(2), min(4), "D")),
@@ -133,7 +132,7 @@ final class RotationsTest {
     }
 
     @Test
-    void overrideInMinutesLevelOnInfiniteRotation_FullTest() throws Exception {
+    void overrideInMinutesLevelOnInfiniteRotation_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(HOURLY, "A", "B", "C")),
                          asList(overrideBetween(min(2), min(4), "D")),
@@ -146,7 +145,7 @@ final class RotationsTest {
     }
 
     @Test
-    void overrideInMinutesLevelOnInfiniteRotation() throws Exception {
+    void overrideInMinutesLevelOnInfiniteRotation() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(HOURLY, "A", "B", "C")),
                          asList(overrideBetween(min(2), min(4), "D")),
@@ -154,7 +153,7 @@ final class RotationsTest {
     }
 
     @Test
-    void preOverrideOnCallEndTime() throws Exception {
+    void preOverrideOnCallEndTime() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateUntil(min(30), HOURLY, "A", "B", "C")),
                          asList(overrideBetween(min(10), min(20), "D")),
@@ -162,7 +161,7 @@ final class RotationsTest {
     }
 
     @Test
-    void preOverrideOnCallWithoutEndTime() throws Exception {
+    void preOverrideOnCallWithoutEndTime() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(HOURLY, "A", "B", "C")),
                          asList(overrideBetween(min(10), min(20), "D")),
@@ -170,7 +169,7 @@ final class RotationsTest {
     }
 
     @Test
-    void overrideInMinutesLevelOnRotationWithEndTime_FullTest() throws Exception {
+    void overrideInMinutesLevelOnRotationWithEndTime_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateUntil(min(3), HOURLY, "A", "B", "C")),
                          asList(overrideBetween(min(2), min(4), "D")),
@@ -183,7 +182,7 @@ final class RotationsTest {
     }
 
     @Test
-    void overrideExceedsRotationEndTime() throws Exception {
+    void overrideExceedsRotationEndTime() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateUntil(min(20), HOURLY, "A", "B", "C")),
                          asList(overrideBetween(min(10), min(30), "D")),
@@ -191,16 +190,15 @@ final class RotationsTest {
     }
 
     @Test
-    void singleUserRotationWithEndTime() throws Exception {
+    void singleUserRotationWithEndTime() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateUntil(hour(12), DAILY, "A")),
                          asList(),
                          expectAt(hour(0), onCallUntil(hour(12), "A")));
     }
 
-
     @Test
-    void singleUserRotationWithEndTime_FullTest() throws Exception {
+    void singleUserRotationWithEndTime_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateUntil(hour(30), DAILY, "A")),
                          asList(),
@@ -241,7 +239,7 @@ final class RotationsTest {
     }
 
     @Test
-    void singleUserInifiniteRotation() throws Exception {
+    void singleUserInifiniteRotation() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(DAILY, "A")),
                          asList(),
@@ -249,7 +247,7 @@ final class RotationsTest {
     }
 
     @Test
-    void singleUserInifiniteRotation_FullTest() throws Exception {
+    void singleUserInifiniteRotation_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(DAILY, "A")),
                          asList(),
@@ -287,7 +285,7 @@ final class RotationsTest {
     }
 
     @Test
-    void singleUserRotationWithTimeRestriction() throws Exception {
+    void singleUserRotationWithTimeRestriction() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(DAILY, asList(restrictTo(hour(8), hour(18))), "A")),
                          asList(),
@@ -295,7 +293,7 @@ final class RotationsTest {
     }
 
     @Test
-    void singleUserRotationWithTimeRestriction_FullTest() throws Exception {
+    void singleUserRotationWithTimeRestriction_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(DAILY, asList(restrictTo(hour(8), hour(18))), "A")),
                          asList(),
@@ -350,9 +348,8 @@ final class RotationsTest {
                          expectAt(hour(48), nextOnCallFrom(hour(56), "A")));
     }
 
-
     @Test
-    void successiveOverridesOfSameUser() throws Exception {
+    void successiveOverridesOfSameUser() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(HOURLY, "A", "B")),
                          asList(overrideBetween(min(10), min(15), "D"), overrideBetween(min(15), min(20), "D")),
@@ -360,7 +357,7 @@ final class RotationsTest {
     }
 
     @Test
-    void successiveOverridesOfSameUser_FullTest() throws Exception {
+    void successiveOverridesOfSameUser_FullTest() {
         assertRecipients(RotationsTest::getRecipientsWithInterval,
                          asList(rotateForever(HOURLY, "A", "B")),
                          asList(overrideBetween(min(10), min(15), "D"), overrideBetween(min(15), min(20), "D")),

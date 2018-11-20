@@ -33,6 +33,8 @@ public final class Recurrence {
                       Collection<Range<Instant>> subRanges) {
         this.recurrenceRange = recurrenceRange;
         this.iterationDuration = iterationDuration;
+        // todo: write test to show that empty subranges handled
+        // todo: write javadoc to explain that empty subranges handled
         disjointRanges = toDisjointRanges(((subRanges != null) && !subRanges.isEmpty())
                                           ? subRanges
                                           : singletonList(Range.of(Instant.EPOCH,
@@ -110,7 +112,10 @@ public final class Recurrence {
     }
 
     private static ZonedDateTime sum(ZonedDateTime zonedDateTime, Instant instant) {
-        long instantNanos = TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
-        return zonedDateTime.plus(instantNanos, ChronoUnit.NANOS);
+        return zonedDateTime.plus(instantToNanos(instant), ChronoUnit.NANOS);
+    }
+
+    private static long instantToNanos(Instant instant) {
+        return TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
     }
 }

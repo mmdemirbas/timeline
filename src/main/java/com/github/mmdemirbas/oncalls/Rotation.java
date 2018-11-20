@@ -25,6 +25,8 @@ public final class Rotation<V> {
         this.patches = patches;
     }
 
+    // todo: should I write tests for Rotation event Rotations have tests?
+
     public Timeline<ZonedDateTime, V> toTimeline(Range<ZonedDateTime> calculationRange) {
         Timeline<ZonedDateTime, V> timeline;
         if (recipients.isEmpty()) {

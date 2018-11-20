@@ -84,15 +84,13 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         return (input == null) ? emptyList() : input;
     }
 
-    // todo: tests & javadocs
-
-    // todo: eliminate nulls
-
     public Interval<C, List<V>> findCurrentInterval(C point) {
+        // todo: write tests & javadocs
         return getValuesOrEmpty(intervalMap.floorEntry(point));
     }
 
     public Interval<C, List<V>> findNextInterval(C point) {
+        // todo: write tests & javadocs
         return getValuesOrEmpty(intervalMap.higherEntry(point));
     }
 
@@ -110,10 +108,12 @@ public final class Timeline<C extends Comparable<? super C>, V> {
     }
 
     public <U> Timeline<C, U> mapWith(Function<? super V, ? extends U> mapper) {
+        // todo: write tests & javadocs
         return with(interval -> Interval.of(interval.getRange(), mapper.apply(interval.getValue())));
     }
 
     public Timeline<C, V> limitWith(Range<C> calculationRange) {
+        // todo: write tests & javadocs
         return with(interval -> Interval.of(calculationRange.intersect(interval.getRange()), interval.getValue()));
     }
 
@@ -122,6 +122,7 @@ public final class Timeline<C extends Comparable<? super C>, V> {
     }
 
     public Timeline<C, V> mergeWith(Timeline<C, ? extends V> other) {
+        // todo: write tests & javadocs
         return merge(this, other, (values, otherValues) -> {
             List<V> result = new ArrayList<>();
             result.addAll(values);
@@ -131,6 +132,7 @@ public final class Timeline<C extends Comparable<? super C>, V> {
     }
 
     public Timeline<C, V> patchWith(Timeline<C, ? extends UnaryOperator<List<V>>> patchTimeline) {
+        // todo: write tests & javadocs
         return merge(this,
                      patchTimeline,
                      (values, patches) -> reduce((List<V>) new ArrayList<>(values),

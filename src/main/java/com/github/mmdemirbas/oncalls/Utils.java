@@ -19,6 +19,12 @@ import java.util.stream.Stream;
  * @since 2018-11-19 12:20
  */
 public final class Utils {
+    // todo: eliminate nulls as much as possible, and document null-safety in javadocs
+
+    // todo: write tests for Utils
+
+    // todo: move other common parts from comlex classes like Recurrence & Timeline
+
     @SafeVarargs
     public static <K, V> Map<K, V> mapOf(Entry<K, V>... entries) {
         Map<K, V> map = new LinkedHashMap<>();
