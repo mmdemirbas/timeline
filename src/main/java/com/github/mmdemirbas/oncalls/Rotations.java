@@ -1,36 +1,35 @@
 package com.github.mmdemirbas.oncalls;
 
-import com.github.mmdemirbas.oncalls.Timeline.Patch;
-import lombok.Value;
+import lombok.Getter;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 /**
  * @author Muhammed Demirbaş
  * @since 2018-11-19 17:50
  */
-@Value
 public final class Rotations<V> {
-    Collection<Rotation<V>>                 rotations;
-    List<Timeline<ZonedDateTime, Patch<V>>> globalPatches;
+    @Getter private final Collection<Rotation<V>>                               rotations;
+    @Getter private final List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> globalPatches;
+
+    public Rotations(Collection<Rotation<V>> rotations,
+                     List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> globalPatches) {
+        this.rotations = rotations;
+        this.globalPatches = globalPatches;
+    }
 
     public Timeline<ZonedDateTime, V> toTimeline(Range<ZonedDateTime> calculationRange) {
         Timeline<ZonedDateTime, V> timeline = Timeline.of();
-        if (rotations != null) {
-            for (Rotation<V> rotation : rotations) {
-                Timeline<ZonedDateTime, V> rotationTimeline = rotation.toTimeline(calculationRange);
-                timeline = timeline.merge(rotationTimeline, Utils::merge);
-            }
-        }
-        if (globalPatches != null) {
-            for (Timeline<ZonedDateTime, Patch<V>> patchTimeline : globalPatches) {
-                Timeline<ZonedDateTime, Patch<V>> patch = patchTimeline.limitToRange(calculationRange);
-                timeline = timeline.withPatch(patch);
-            }
-        }
+        timeline = Utils.reduce(timeline,
+                                rotations,
+                                (acc, rotation) -> acc.mergeWith(rotation.toTimeline(calculationRange)));
+
+        timeline = Utils.reduce(timeline,
+                                globalPatches,
+                                (acc, globalPatch) -> acc.patchWith(globalPatch.limitWith(calculationRange)));
         return timeline;
     }
-
 }

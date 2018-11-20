@@ -10,141 +10,199 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
-import static com.github.mmdemirbas.oncalls.Utils.buildIntervalMap;
 import static com.github.mmdemirbas.oncalls.Utils.nextOrNull;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableNavigableMap;
 
 /**
- * Represents an ordered line of {@link Event}s which are {@link Range}-{@link Value} associations.
+ * Represents an ordered line of {@link Interval}s which are {@link Range}-{@link V} associations.
  * This is a generalization of timeline of events.
  * <p>
- * This class is immutable if the generic types {@link Point} and {@link Value} is immutable.
+ * This class is immutable if the generic types {@link C} and {@link V} is immutable.
  *
  * @author Muhammed Demirbaş
  * @since 2018-11-18 09:55
  */
 @ToString
 @EqualsAndHashCode
-public final class Timeline<Point extends Comparable<? super Point>, Value> {
-    private final transient List<Event<Value, Point>>                      events;
-    @Getter private final   NavigableMap<Point, List<Event<Value, Point>>> intervalMap;
+public final class Timeline<C extends Comparable<? super C>, V> {
+    @Getter public final transient List<Interval<C, V>>     intervals;
+    @Getter public final           NavigableMap<C, List<V>> intervalMap;
 
-    public static <Point extends Comparable<? super Point>, Value> Timeline<Point, Value> of(Event<Value, Point>... events) {
-        return new Timeline<>(asList(events));
+    @SafeVarargs
+    public static <C extends Comparable<? super C>, V> Timeline<C, V> of(Interval<C, V>... intervals) {
+        return new Timeline<>(asList(intervals));
     }
 
-    public static <Point extends Comparable<? super Point>, Value> Timeline<Point, Value> of(Collection<Event<Value, Point>> events) {
-        return new Timeline<>(events);
+    public static <C extends Comparable<? super C>, V> Timeline<C, V> of(Collection<Interval<C, V>> intervals) {
+        return new Timeline<>(intervals);
     }
 
-    private Timeline(Collection<Event<Value, Point>> events) {
-        this.events = unmodifiableList(new ArrayList<>(events));
-        intervalMap = buildIntervalMap(events, Event::getRange);
+    private Timeline(Collection<Interval<C, V>> intervals) {
+        this.intervals = unmodifiableList(new ArrayList<>(intervals));
+        intervalMap = buildIntervalMap(intervals);
     }
 
-    public Timeline<Point, Value> withPatches(Iterable<Timeline<Point, Patch<Value>>> patchTimelines) {
-        Timeline<Point, Value> current = this;
-        for (Timeline<Point, Patch<Value>> patch : patchTimelines) {
-            current = withPatch(patch);
-        }
-        return current;
+    /**
+     * Builds an interval map which can be considered as another form of an "interval tree".
+     */
+    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(Iterable<Interval<C, V>> intervals) {
+        NavigableMap<C, List<V>> intervalMap   = new TreeMap<>();
+        List<V>                  ongoingEvents = new ArrayList<>();
+        buildChangePointsMap(intervals).forEach((point, changes) -> {
+            changes.forEach(change -> change.accept(ongoingEvents));
+            intervalMap.put(point, unmodifiableList(new ArrayList<>(ongoingEvents)));
+        });
+        return unmodifiableNavigableMap(intervalMap);
     }
 
-    public Timeline<Point, Value> withPatch(Timeline<Point, ? extends Patch<Value>> patchTimeline) {
-        return merge(patchTimeline, (values, patches) -> {
-            List<Value> result = values;
-            for (Patch<Value> patch : patches) {
-                result = patch.patch(result);
+    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<Consumer<List<V>>>> buildChangePointsMap(
+            Iterable<Interval<C, V>> intervals) {
+        // todo: add ve remove'lar ayrı listelerde tutulabilir, daha basit olur
+        NavigableMap<C, List<Consumer<List<V>>>> changePoints = new TreeMap<>();
+        intervals.forEach(interval -> {
+            Range<C> range = interval.getRange();
+            if (!range.isEmpty()) {
+                changePoints.computeIfAbsent(range.getStartInclusive(), x -> new ArrayList<>())
+                            .add(list -> list.add(interval.getValue()));
+                changePoints.computeIfAbsent(range.getEndExclusive(), x -> new ArrayList<>())
+                            .add(list -> list.remove(interval.getValue()));
             }
+        });
+        return changePoints;
+    }
+
+    // todo: tests & javadocs
+
+    public Interval<C, List<V>> findCurrentInterval(C point) {
+        return getValuesOrNull(intervalMap.floorEntry(point));
+    }
+
+    public Interval<C, List<V>> findNextInterval(C point) {
+        return getValuesOrNull(intervalMap.higherEntry(point));
+    }
+
+    private Interval<C, List<V>> getValuesOrNull(Entry<? extends C, ? extends List<V>> entry) {
+        if (entry == null) {
+            return null;
+        }
+        C key = entry.getKey();
+        if (key == null) {
+            return null;
+        }
+        C nextKey = intervalMap.higherKey(key);
+        if (nextKey == null) {
+            return null;
+        }
+        List<V> value = entry.getValue();
+        return Interval.of(key, nextKey, value);
+    }
+
+    public <U> Timeline<C, U> mapWith(Function<? super V, ? extends U> mapper) {
+        return new Timeline<>(Utils.map(intervals,
+                                        interval -> Interval.of(interval.getRange(),
+                                                                mapper.apply(interval.getValue()))));
+    }
+
+    public Timeline<C, V> limitWith(Range<? extends C> calculationRange) {
+        return new Timeline<>(Utils.map(intervals,
+                                        interval -> Interval.of(interval.getRange()
+                                                                        .intersectedBy(calculationRange),
+                                                                interval.getValue())));
+    }
+
+    public Timeline<C, V> mergeWith(Timeline<C, ? extends V> other) {
+        return merge(other, (values, otherValues) -> {
+            List<V> result = new ArrayList<>();
+            result.addAll(values);
+            result.addAll(otherValues);
             return result;
         });
     }
 
-    public <T, U> Timeline<Point, U> merge(Timeline<Point, T> patchTimeline,
-                                           BiFunction<? super List<Value>, ? super List<T>, ? extends List<U>> merge) {
-        Collection<Point> keyPoints = new TreeSet<>();
+    public Timeline<C, V> patchWith(Timeline<C, ? extends UnaryOperator<List<V>>> patchTimeline) {
+        return merge(patchTimeline,
+                     (values, patches) -> Utils.reduce((List<V>) new ArrayList<>(values),
+                                                       patches,
+                                                       (acc, patch) -> patch.apply(acc)));
+    }
+
+    private <P, U> Timeline<C, U> merge(Timeline<C, P> other,
+                                        BiFunction<? super List<? extends V>, ? super List<? extends P>, ? extends List<? extends U>> mergeFunction) {
+        Collection<C> keyPoints = new TreeSet<>();
         keyPoints.addAll(intervalMap.keySet());
-        keyPoints.addAll(patchTimeline.intervalMap.keySet());
+        keyPoints.addAll(other.intervalMap.keySet());
 
-        List<Event<U, Point>> mergedEvents = new ArrayList<>();
-        Iterator<Point>       iterator     = keyPoints.iterator();
-        Point                 current      = nextOrNull(iterator);
-        Point                 next         = nextOrNull(iterator);
-
-        List<U> bufferedValues = new ArrayList<>();
-        Point   bufferedStart  = null;
+        List<Interval<C, U>> mergedIntervals = new ArrayList<>();
+        Iterator<C>          iterator        = keyPoints.iterator();
+        C                    current         = nextOrNull(iterator);
+        C                    next            = nextOrNull(iterator);
+        List<? extends U>    buffer          = new ArrayList<>();
+        C                    bufferStart     = null;
 
         while (next != null) {
-            List<Value> left   = getValues(current);
-            List<T>     right  = patchTimeline.getValues(current);
-            List<U>     merged = merge.apply(left, right);
+            List<V>           vs = valuesAt(current);
+            List<P>           ps = other.valuesAt(current);
+            List<? extends U> us = mergeFunction.apply(vs, ps);
 
-            if (!bufferedValues.equals(merged)) {
-                for (U u : bufferedValues) {
-                    mergedEvents.add(new Event<>(u, Range.of(bufferedStart, current)));
+            if (!buffer.equals(us)) {
+                for (U u : buffer) {
+                    mergedIntervals.add(Interval.of(bufferStart, current, u));
                 }
-                bufferedValues = merged;
-                bufferedStart = current;
+                buffer = us;
+                bufferStart = current;
             }
 
             current = next;
             next = nextOrNull(iterator);
         }
-        for (U u : bufferedValues) {
-            mergedEvents.add(new Event<>(u, Range.of(bufferedStart, current)));
+        for (U u : buffer) {
+            mergedIntervals.add(Interval.of(bufferStart, current, u));
         }
-        return new Timeline<>(mergedEvents);
+        return new Timeline<>(mergedIntervals);
     }
 
-    private List<Value> getValues(Point point) {
-        Entry<Point, List<Event<Value, Point>>> entry = intervalMap.floorEntry(point);
-        if (entry == null) {
-            return emptyList();
-        }
-
-        List<Event<Value, Point>> events = entry.getValue();
-        if ((events == null) || events.isEmpty()) {
-            return emptyList();
-        }
-        return events.stream()
-                     .map(Event::getValue)
-                     .collect(Collectors.toList());
+    private List<V> valuesAt(C point) {
+        Interval<C, List<V>> current = findCurrentInterval(point);
+        return (current == null) ? emptyList() : current.getValue();
     }
 
-    public List<Event<Value, Point>> findCurrent(Point point) {
-        return Utils.getValueOrNull(intervalMap.floorEntry(point));
-    }
+    /**
+     * Represents an association between a {@link Range} and an arbitrary value.
+     * <p>
+     * This class is immutable if the generic types {@link C} and {@link V} is immutable.
+     *
+     * @author Muhammed Demirbaş
+     * @since 2018-11-18 09:54
+     */
+    @ToString
+    @EqualsAndHashCode
+    public static final class Interval<C extends Comparable<? super C>, V> {
+        @Getter private final Range<C> range;
+        @Getter private final V        value;
 
-    public List<Event<Value, Point>> findNext(Point point) {
-        return Utils.getValueOrNull(intervalMap.higherEntry(point));
-    }
-
-    public Timeline<Point, Value> limitToRange(Range<Point> calculationRange) {
-        Point start = calculationRange.getStartInclusive();
-        Point end   = calculationRange.getEndExclusive();
-        return new Timeline<>(events.stream()
-                                    .map(event -> event.mapRange(range -> range.after(start)
-                                                                               .before(end)))
-                                    .collect(Collectors.toList()));
-    }
-
-    public interface Patch<V> {
-        List<V> patch(List<V> existing);
-
-        static <V> Patch<V> override(V value) {
-            return ignored -> asList(value);
+        public static <C extends Comparable<? super C>, V> Interval<C, V> of(C startInclusive,
+                                                                             C endExclusive,
+                                                                             V value) {
+            return of(Range.of(startInclusive, endExclusive), value);
         }
 
-        static <V> Patch<V> forward(V forwarder, V forwardedTo) {
-            return existing -> existing.stream()
-                                       .map(x -> x.equals(forwarder) ? forwardedTo : x)
-                                       .collect(Collectors.toList());
+        public static <C extends Comparable<? super C>, V> Interval<C, V> of(Range<C> range, V value) {
+            return new Interval<>(range, value);
+        }
+
+        private Interval(Range<C> range, V value) {
+            this.range = range;
+            this.value = value;
         }
     }
 }
