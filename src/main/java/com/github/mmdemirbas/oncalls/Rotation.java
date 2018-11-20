@@ -13,6 +13,7 @@ import static com.github.mmdemirbas.oncalls.Utils.reduce;
  * @since 2018-11-19 17:51
  */
 public final class Rotation<V> {
+    // todo: decide whether these fields should have getters or not!
     @Getter private final Recurrence                                            recurrence; // todo: break need to getter and remove it
     @Getter private final List<V>                                               recipients; // todo: break need to getter and remove it & ensure this is immutable
     private final         List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> patches; // // todo: ensure this is immutable
@@ -25,7 +26,7 @@ public final class Rotation<V> {
         this.patches = patches;
     }
 
-    // todo: should I write tests for Rotation event Rotations have tests?
+    // todo: should I write tests for Rotation even Rotations have tests?
 
     public Timeline<ZonedDateTime, V> toTimeline(Range<ZonedDateTime> calculationRange) {
         Timeline<ZonedDateTime, V> timeline;

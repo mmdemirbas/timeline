@@ -32,8 +32,8 @@ import static java.util.Collections.unmodifiableNavigableMap;
 public final class Timeline<C extends Comparable<? super C>, V> {
     private static final Interval EMPTY_INTERVAL = Interval.of(null, emptyList());
 
-    @Getter private final transient List<Interval<C, V>>     intervals;
-    @Getter private final           NavigableMap<C, List<V>> intervalMap;
+    private final transient List<Interval<C, V>>     intervals; // todo: break need to interval list & remove it
+    @Getter private final   NavigableMap<C, List<V>> intervalMap;
 
     @SafeVarargs
     public static <C extends Comparable<? super C>, V> Timeline<C, V> of(Interval<C, V>... intervals) {
@@ -109,11 +109,13 @@ public final class Timeline<C extends Comparable<? super C>, V> {
 
     public <U> Timeline<C, U> mapWith(Function<? super V, ? extends U> mapper) {
         // todo: write tests & javadocs
+        // todo: implement using intervalMap (should be faster)
         return with(interval -> Interval.of(interval.getRange(), mapper.apply(interval.getValue())));
     }
 
     public Timeline<C, V> limitWith(Range<C> calculationRange) {
         // todo: write tests & javadocs
+        // todo: implement using intervalMap (should be faster)
         return with(interval -> Interval.of(calculationRange.intersect(interval.getRange()), interval.getValue()));
     }
 

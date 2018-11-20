@@ -1,7 +1,6 @@
 package com.github.mmdemirbas.oncalls;
 
 import com.github.mmdemirbas.oncalls.Timeline.Interval;
-import lombok.Value;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -386,12 +385,18 @@ final class RotationsTest {
 
     /// test dsl ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @Value
     private static final class OnCall {
         String  name;
         Instant startTime;
         Instant endTime;
         boolean next;
+
+        public OnCall(String name, Instant startTime, Instant endTime, boolean next) {
+            this.name = name;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.next = next;
+        }
     }
 
     private static void assertRecipients(BiFunction<Rotations<String>, Long, List<OnCall>> getRecipients,
