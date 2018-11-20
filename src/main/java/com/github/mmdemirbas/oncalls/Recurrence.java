@@ -95,30 +95,27 @@ public final class Recurrence {
      * Calculates a timeline at the specified time range mapping the ranges to corresponding iteration indices.
      */
     public Timeline<ZonedDateTime, Long> toTimeline(Range<ZonedDateTime> calculationRange) {
-        ZonedDateTime        recurrenceStart        = recurrenceRange.getStartInclusive();
-        Range<ZonedDateTime> effectiveRange         = recurrenceRange.intersectedBy(calculationRange);
-        ZonedDateTime        calculationStart       = effectiveRange.getStartInclusive();
-        ZonedDateTime        calculationEnd         = effectiveRange.getEndExclusive();
-        Duration             elapsedDurationAtStart = Duration.between(recurrenceStart, calculationStart);
-        Duration             elapsedDurationAtEnd   = Duration.between(recurrenceStart, calculationEnd);
-        long                 elapsedNanosAtStart    = elapsedDurationAtStart.toNanos();
-        long                 elapsedNanosAtEnd      = elapsedDurationAtEnd.toNanos();
-        long                 iterationPeriodNanos   = iterationDuration.toNanos();
-        long                 iterationIndexAtStart  = elapsedNanosAtStart / iterationPeriodNanos;
-        long                 iterationIndexAtEnd    = elapsedNanosAtEnd / iterationPeriodNanos;
+        Range<ZonedDateTime> effectiveRange = recurrenceRange.intersectedBy(calculationRange);
+        long                 startIndex     = iterationIndexAt(effectiveRange.getStartInclusive());
+        long                 endIndex       = iterationIndexAt(effectiveRange.getEndExclusive());
 
-        List<Interval<ZonedDateTime, Long>> intervals      = new ArrayList<>();
-        Duration                            passedDuration = iterationDuration.multipliedBy(iterationIndexAtStart);
-        ZonedDateTime                       offset         = recurrenceStart.plus(passedDuration);
-        for (long iterationIndex = iterationIndexAtStart; iterationIndex <= iterationIndexAtEnd; iterationIndex++) {
-            long          finalIterationIndex = iterationIndex;
-            ZonedDateTime finalOffset         = offset;
-            intervals.addAll(Utils.map(disjointRanges,
-                                       range -> Interval.of(sum(range, finalOffset).intersectedBy(effectiveRange),
-                                                            finalIterationIndex)));
+        ZonedDateTime offset = recurrenceRange.getStartInclusive()
+                                              .plus(iterationDuration.multipliedBy(startIndex));
+
+        List<Interval<ZonedDateTime, Long>> intervals = new ArrayList<>();
+        for (long index = startIndex; index <= endIndex; index++) {
+            for (Range<Instant> range : disjointRanges) {
+                Range<ZonedDateTime> rangeWithOffset = sum(range, offset);
+                intervals.add(Interval.of(rangeWithOffset.intersectedBy(effectiveRange), index));
+            }
             offset = offset.plus(iterationDuration);
         }
         return Timeline.of(intervals);
+    }
+
+    private long iterationIndexAt(ZonedDateTime point) {
+        return Duration.between(recurrenceRange.getStartInclusive(), point)
+                       .toNanos() / iterationDuration.toNanos();
     }
 
     private static Range<ZonedDateTime> sum(Range<Instant> range, ZonedDateTime offset) {

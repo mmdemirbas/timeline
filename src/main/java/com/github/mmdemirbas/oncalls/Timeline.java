@@ -95,10 +95,7 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         if (entry == null) {
             return null;
         }
-        C key = entry.getKey();
-        if (key == null) {
-            return null;
-        }
+        C key     = entry.getKey();
         C nextKey = intervalMap.higherKey(key);
         if (nextKey == null) {
             return null;
