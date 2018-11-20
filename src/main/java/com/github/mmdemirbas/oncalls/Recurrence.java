@@ -12,13 +12,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NavigableSet;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static java.util.Collections.singletonList;
-import static java.util.Collections.unmodifiableNavigableSet;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * Represents a recurring period on the time line.
@@ -29,9 +27,9 @@ import static java.util.Collections.unmodifiableNavigableSet;
  * @since 2018-11-19 14:48
  */
 public final class Recurrence {
-    @Getter private final Range<ZonedDateTime>         recurrenceRange;
-    @Getter private final Duration                     iterationDuration;
-    @Getter private final NavigableSet<Range<Instant>> disjointRanges;
+    @Getter private final Range<ZonedDateTime> recurrenceRange;
+    @Getter private final Duration             iterationDuration;
+    @Getter private final List<Range<Instant>> disjointRanges;
 
     public Recurrence(Range<ZonedDateTime> recurrenceRange,
                       Duration iterationDuration,
@@ -51,7 +49,7 @@ public final class Recurrence {
      * Returns a set of disjoint ranges by joining intersecting, overlapping and successive ranges.
      * Empty ranges will not appear in the result set.
      */
-    static <C extends Comparable<? super C>> NavigableSet<Range<C>> toDisjointRanges(Collection<Range<C>> ranges) {
+    static <C extends Comparable<? super C>> List<Range<C>> toDisjointRanges(Collection<Range<C>> ranges) {
         List<Range<C>> rangesOrderedByStart = new ArrayList<>(ranges);
         rangesOrderedByStart.sort(Comparator.comparing(Range::getStartInclusive));
 
@@ -59,7 +57,7 @@ public final class Recurrence {
         Range<C>           current = Utils.nextOrNull(it);
         Range<C>           next    = Utils.nextOrNull(it);
 
-        NavigableSet<Range<C>> disjointRanges = new TreeSet<>();
+        List<Range<C>> disjointRanges = new ArrayList<>();
         Consumer<Range<C>> yield = range -> {
             if (!range.isEmpty()) {
                 disjointRanges.add(range);
@@ -88,7 +86,7 @@ public final class Recurrence {
         if ((current != null)) {
             yield.accept(current);
         }
-        return unmodifiableNavigableSet(disjointRanges);
+        return unmodifiableList(disjointRanges);
     }
 
     /**

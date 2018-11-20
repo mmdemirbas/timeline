@@ -46,52 +46,6 @@ final class RangeTest {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
-    void compareTo_Disjoint() {
-        assertCompareTo(-1, Range.of(1, 3), Range.of(5, 7));
-    }
-
-    @Test
-    void compareTo_Successive() {
-        assertCompareTo(-1, Range.of(1, 3), Range.of(3, 5));
-    }
-
-    @Test
-    void compareTo_Intersecting() {
-        assertCompareTo(-1, Range.of(1, 5), Range.of(3, 7));
-    }
-
-    @Test
-    void compareTo_OverlappingWithSameEnd() {
-        assertCompareTo(-1, Range.of(1, 5), Range.of(3, 5));
-    }
-
-    @Test
-    void compareTo_OverlappingWithSameStart() {
-        assertCompareTo(1, Range.of(1, 5), Range.of(1, 3));
-    }
-
-    @Test
-    void compareTo_Containing() {
-        assertCompareTo(-1, Range.of(1, 7), Range.of(3, 5));
-    }
-
-    @Test
-    void compareTo_Equal() {
-        assertCompareTo(0, Range.of(1, 3), Range.of(1, 3));
-    }
-
-    @Test
-    void compareTo_EmptyRange() {
-        assertCompareTo(-1, Range.of(1, 1), Range.of(2, 2));
-    }
-
-    private static void assertCompareTo(int expected, Range<Integer> left, Range<Integer> right) {
-        assertEquals(expected, left.compareTo(right));
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Test
     void isEmpty_NonEmpty() {
         assertIsEmpty(false, Range.of(1, 2));
     }

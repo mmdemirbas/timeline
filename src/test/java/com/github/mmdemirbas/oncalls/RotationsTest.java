@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -482,9 +481,9 @@ final class RotationsTest {
                                                 List<Range<Instant>> restrictions,
                                                 String... recipients) {
         return new Rotation<>(new Recurrence(Range.of(instantToZonedDateTime(Instant.EPOCH),
-                                                      instantToZonedDateTime(endTime)),
-                                             rotationPeriod,
-                                             new TreeSet<>(restrictions)), asList(recipients), asList());
+                                                      instantToZonedDateTime(endTime)), rotationPeriod, restrictions),
+                              asList(recipients),
+                              asList());
     }
 
     private static Interval<Instant, String> overrideBetween(Instant startTime, Instant endTime, String name) {
@@ -508,7 +507,9 @@ final class RotationsTest {
     }
 
     private static String format(Entry<Instant, List<OnCall>> onCalls) {
-        return String.format("at %s:\n%s", format(onCalls.getKey()), joinLines(onCalls.getValue(), RotationsTest::format));
+        return String.format("at %s:\n%s",
+                             format(onCalls.getKey()),
+                             joinLines(onCalls.getValue(), RotationsTest::format));
     }
 
     private static String format(OnCall onCall) {

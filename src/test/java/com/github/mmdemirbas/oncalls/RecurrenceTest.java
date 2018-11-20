@@ -70,7 +70,7 @@ final class RecurrenceTest {
     }
 
     private static void assertDisjointRanges(List<Range<Integer>> expected, Collection<Range<Integer>> ranges) {
-        assertEquals(new TreeSet<>(expected), Recurrence.toDisjointRanges(ranges));
+        assertEquals(expected, Recurrence.toDisjointRanges(ranges));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -20,7 +20,7 @@ import java.util.Objects;
  */
 @ToString
 @EqualsAndHashCode
-public final class Range<C extends Comparable<? super C>> implements Comparable<Range<C>> {
+public final class Range<C extends Comparable<? super C>> {
     @Getter private final C startInclusive;
     @Getter private final C endExclusive;
 
@@ -44,16 +44,6 @@ public final class Range<C extends Comparable<? super C>> implements Comparable<
         }
         this.startInclusive = startInclusive;
         this.endExclusive = endExclusive;
-    }
-
-    /**
-     * Compares {@code this} range to {@code other} range by comparing firstly their start points,
-     * then the end points if the starts points are equal.
-     */
-    @Override
-    public int compareTo(Range<C> o) {
-        int cmp = startInclusive.compareTo(o.startInclusive);
-        return (cmp == 0) ? endExclusive.compareTo(o.endExclusive) : cmp;
     }
 
     /**
