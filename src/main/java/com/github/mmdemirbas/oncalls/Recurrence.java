@@ -36,13 +36,14 @@ public final class Recurrence {
                       Collection<Range<Instant>> subRanges) {
         this.recurrenceRange = recurrenceRange;
         this.iterationDuration = iterationDuration;
+        disjointRanges = toDisjointRanges(((subRanges != null) && !subRanges.isEmpty())
+                                          ? subRanges
+                                          : singletonList(Range.of(Instant.EPOCH,
+                                                                   durationToInstant(iterationDuration))));
+    }
 
-        Collection<Range<Instant>> effectiveSubRanges = ((subRanges != null) && !subRanges.isEmpty())
-                                                        ? subRanges
-                                                        : singletonList(Range.of(Instant.EPOCH,
-                                                                                 Instant.ofEpochSecond(0L,
-                                                                                                       iterationDuration.toNanos())));
-        disjointRanges = toDisjointRanges(effectiveSubRanges);
+    private static Instant durationToInstant(Duration duration) {
+        return Instant.ofEpochSecond(0L, duration.toNanos());
     }
 
     /**
@@ -54,8 +55,8 @@ public final class Recurrence {
         rangesOrderedByStart.sort(Comparator.comparing(Range::getStartInclusive));
 
         Iterator<Range<C>> it      = rangesOrderedByStart.iterator();
-        Range<C>           current = Utils.nextOrNull(it);
-        Range<C>           next    = Utils.nextOrNull(it);
+        Range<C>           current = nextOrNull(it);
+        Range<C>           next    = nextOrNull(it);
 
         List<Range<C>> disjointRanges = new ArrayList<>();
         Consumer<Range<C>> yield = range -> {
@@ -70,23 +71,24 @@ public final class Recurrence {
                 yield.accept(current);
             } else {
                 do {
-                    if (currentEnd.compareTo(next.getEndExclusive()) < 0) {
-                        currentEnd = next.getEndExclusive();
-                    }
-                    next = Utils.nextOrNull(it);
+                    currentEnd = Range.maxOf(currentEnd, next.getEndExclusive());
+                    next = nextOrNull(it);
                 } while ((next != null) && (currentEnd.compareTo(next.getStartInclusive()) >= 0));
 
-                Range<C> range = Range.of(current.getStartInclusive(), currentEnd);
-                yield.accept(range);
+                yield.accept(Range.of(current.getStartInclusive(), currentEnd));
             }
             current = next;
-            next = Utils.nextOrNull(it);
+            next = nextOrNull(it);
         }
 
         if ((current != null)) {
             yield.accept(current);
         }
         return unmodifiableList(disjointRanges);
+    }
+
+    private static <T> T nextOrNull(Iterator<? extends T> iterator) {
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**
@@ -103,8 +105,7 @@ public final class Recurrence {
         List<Interval<ZonedDateTime, Long>> intervals = new ArrayList<>();
         for (long index = startIndex; index <= endIndex; index++) {
             for (Range<Instant> range : disjointRanges) {
-                Range<ZonedDateTime> rangeWithOffset = sum(range, offset);
-                intervals.add(Interval.of(rangeWithOffset.intersectedBy(effectiveRange), index));
+                intervals.add(Interval.of(sum(range, offset).intersectedBy(effectiveRange), index));
             }
             offset = offset.plus(iterationDuration);
         }

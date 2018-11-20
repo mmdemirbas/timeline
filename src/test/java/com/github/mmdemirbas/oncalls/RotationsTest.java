@@ -444,18 +444,16 @@ final class RotationsTest {
     private static void addIfNotNull(List<OnCall> oncalls,
                                      boolean nextOnCall,
                                      Interval<ZonedDateTime, List<String>> interval) {
-        if (interval != null) {
-            interval.getValue()
-                    .forEach(value -> {
-                        Range<ZonedDateTime> range          = interval.getRange();
-                        ZonedDateTime        startInclusive = range.getStartInclusive();
-                        ZonedDateTime        endExclusive   = range.getEndExclusive();
-                        oncalls.add(new OnCall(value,
-                                               !nextOnCall ? Instant.EPOCH : startInclusive.toInstant(),
-                                               nextOnCall ? Instant.EPOCH : endExclusive.toInstant(),
-                                               nextOnCall));
-                    });
-        }
+        interval.getValue()
+                .forEach(value -> {
+                    Range<ZonedDateTime> range          = interval.getRange();
+                    ZonedDateTime        startInclusive = range.getStartInclusive();
+                    ZonedDateTime        endExclusive   = range.getEndExclusive();
+                    oncalls.add(new OnCall(value,
+                                           !nextOnCall ? Instant.EPOCH : startInclusive.toInstant(),
+                                           nextOnCall ? Instant.EPOCH : endExclusive.toInstant(),
+                                           nextOnCall));
+                });
     }
 
     private static Entry<Instant, List<OnCall>> expectAt(Instant atTime, OnCall... expecteds) {

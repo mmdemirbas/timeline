@@ -29,10 +29,6 @@ public final class Utils {
         return new SimpleImmutableEntry<>(key, value);
     }
 
-    public static <T> T nextOrNull(Iterator<? extends T> iterator) {
-        return iterator.hasNext() ? iterator.next() : null;
-    }
-
     public static <T, R> List<R> map(Collection<? extends T> items, Function<? super T, ? extends R> mapper) {
         return items.stream()
                     .map(mapper)

@@ -6,7 +6,6 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -17,7 +16,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import static com.github.mmdemirbas.oncalls.Utils.nextOrNull;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
@@ -35,8 +33,10 @@ import static java.util.Collections.unmodifiableNavigableMap;
 @ToString
 @EqualsAndHashCode
 public final class Timeline<C extends Comparable<? super C>, V> {
-    @Getter public final transient List<Interval<C, V>>     intervals;
-    @Getter public final           NavigableMap<C, List<V>> intervalMap;
+    private static final Interval EMPTY_INTERVAL = Interval.of(null, emptyList());
+
+    @Getter private final transient List<Interval<C, V>>     intervals;
+    @Getter private final           NavigableMap<C, List<V>> intervalMap;
 
     @SafeVarargs
     public static <C extends Comparable<? super C>, V> Timeline<C, V> of(Interval<C, V>... intervals) {
@@ -83,22 +83,24 @@ public final class Timeline<C extends Comparable<? super C>, V> {
 
     // todo: tests & javadocs
 
+    // todo: eliminate nulls
+
     public Interval<C, List<V>> findCurrentInterval(C point) {
-        return getValuesOrNull(intervalMap.floorEntry(point));
+        return getValuesOrEmpty(intervalMap.floorEntry(point));
     }
 
     public Interval<C, List<V>> findNextInterval(C point) {
-        return getValuesOrNull(intervalMap.higherEntry(point));
+        return getValuesOrEmpty(intervalMap.higherEntry(point));
     }
 
-    private Interval<C, List<V>> getValuesOrNull(Entry<? extends C, ? extends List<V>> entry) {
+    private Interval<C, List<V>> getValuesOrEmpty(Entry<? extends C, ? extends List<V>> entry) {
         if (entry == null) {
-            return null;
+            return EMPTY_INTERVAL;
         }
         C key     = entry.getKey();
         C nextKey = intervalMap.higherKey(key);
         if (nextKey == null) {
-            return null;
+            return EMPTY_INTERVAL;
         }
         List<V> value = entry.getValue();
         return Interval.of(key, nextKey, value);
@@ -118,7 +120,7 @@ public final class Timeline<C extends Comparable<? super C>, V> {
     }
 
     public Timeline<C, V> mergeWith(Timeline<C, ? extends V> other) {
-        return merge(other, (values, otherValues) -> {
+        return merge(this, other, (values, otherValues) -> {
             List<V> result = new ArrayList<>();
             result.addAll(values);
             result.addAll(otherValues);
@@ -127,50 +129,50 @@ public final class Timeline<C extends Comparable<? super C>, V> {
     }
 
     public Timeline<C, V> patchWith(Timeline<C, ? extends UnaryOperator<List<V>>> patchTimeline) {
-        return merge(patchTimeline,
+        return merge(this,
+                     patchTimeline,
                      (values, patches) -> Utils.reduce((List<V>) new ArrayList<>(values),
                                                        patches,
                                                        (acc, patch) -> patch.apply(acc)));
     }
 
-    private <P, U> Timeline<C, U> merge(Timeline<C, P> other,
-                                        BiFunction<? super List<? extends V>, ? super List<? extends P>, ? extends List<? extends U>> mergeFunction) {
+    private static <C extends Comparable<? super C>, X, Y, Z> Timeline<C, Z> merge(Timeline<C, X> x,
+                                                                                   Timeline<C, Y> y,
+                                                                                   BiFunction<? super List<? extends X>, ? super List<? extends Y>, ? extends List<? extends Z>> mergeFunction) {
+        List<Interval<C, Z>> intervals = new ArrayList<>();
+        List<? extends Z>    values    = emptyList();
+        C                    start     = null;
+        C                    end       = null;
+
         Collection<C> keyPoints = new TreeSet<>();
-        keyPoints.addAll(intervalMap.keySet());
-        keyPoints.addAll(other.intervalMap.keySet());
+        keyPoints.addAll(x.intervalMap.keySet());
+        keyPoints.addAll(y.intervalMap.keySet());
 
-        List<Interval<C, U>> mergedIntervals = new ArrayList<>();
-        Iterator<C>          iterator        = keyPoints.iterator();
-        C                    current         = nextOrNull(iterator);
-        C                    next            = nextOrNull(iterator);
-        List<? extends U>    buffer          = new ArrayList<>();
-        C                    bufferStart     = null;
-
-        while (next != null) {
-            List<V>           vs = valuesAt(current);
-            List<P>           ps = other.valuesAt(current);
-            List<? extends U> us = mergeFunction.apply(vs, ps);
-
-            if (!buffer.equals(us)) {
-                for (U u : buffer) {
-                    mergedIntervals.add(Interval.of(bufferStart, current, u));
-                }
-                buffer = us;
-                bufferStart = current;
+        for (C keyPoint : keyPoints) {
+            end = keyPoint;
+            List<? extends Z> mergedValues = mergeFunction.apply(x.findCurrentInterval(end)
+                                                                  .getValue(),
+                                                                 y.findCurrentInterval(end)
+                                                                  .getValue());
+            if (!values.equals(mergedValues)) {
+                addIntervals(intervals, values, start, end);
+                values = mergedValues;
+                start = end;
             }
+        }
 
-            current = next;
-            next = nextOrNull(iterator);
-        }
-        for (U u : buffer) {
-            mergedIntervals.add(Interval.of(bufferStart, current, u));
-        }
-        return new Timeline<>(mergedIntervals);
+        addIntervals(intervals, values, start, end);
+        return new Timeline<>(intervals);
     }
 
-    private List<V> valuesAt(C point) {
-        Interval<C, List<V>> current = findCurrentInterval(point);
-        return (current == null) ? emptyList() : current.getValue();
+    private static <C extends Comparable<? super C>, U> void addIntervals(List<? super Interval<C, U>> output,
+                                                                          Collection<? extends U> values,
+                                                                          C start,
+                                                                          C end) {
+        if (!values.isEmpty()) {
+            Range<C> range = Range.of(start, end);
+            values.forEach(value -> output.add(Interval.of(range, value)));
+        }
     }
 
     /**

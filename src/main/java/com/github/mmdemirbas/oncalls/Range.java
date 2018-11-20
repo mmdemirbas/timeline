@@ -63,11 +63,11 @@ public final class Range<C extends Comparable<? super C>> {
         return new Range<>(finalS, end);
     }
 
-    private static <C extends Comparable<? super C>> C maxOf(C x, C y) {
+    public static <C extends Comparable<? super C>> C maxOf(C x, C y) {
         return (x.compareTo(y) > 0) ? x : y;
     }
 
-    private static <C extends Comparable<? super C>> C minOf(C x, C y) {
+    public static <C extends Comparable<? super C>> C minOf(C x, C y) {
         return (x.compareTo(y) < 0) ? x : y;
     }
 }
