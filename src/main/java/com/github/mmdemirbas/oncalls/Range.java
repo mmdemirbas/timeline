@@ -6,6 +6,9 @@ import lombok.ToString;
 
 import java.util.Objects;
 
+import static com.github.mmdemirbas.oncalls.Utils.maxOf;
+import static com.github.mmdemirbas.oncalls.Utils.minOf;
+
 /**
  * Represents a range between two {@link Comparable} types with an inclusive start point
  * and exclusive end point as in the following mathematical notation:
@@ -36,12 +39,12 @@ public final class Range<C extends Comparable<? super C>> {
     private Range(C startInclusive, C endExclusive) {
         Objects.requireNonNull(startInclusive, "startInclusive");
         Objects.requireNonNull(endExclusive, "endExclusive");
-
         if (startInclusive.compareTo(endExclusive) > 0) {
             throw new IllegalArgumentException(String.format("must be start <= end, but was: %s > %s",
                                                              startInclusive,
                                                              endExclusive));
         }
+
         this.startInclusive = startInclusive;
         this.endExclusive = endExclusive;
     }
@@ -56,18 +59,10 @@ public final class Range<C extends Comparable<? super C>> {
     /**
      * Returns intersection of {@code this} range and the {@code other} range.
      */
-    public Range<C> intersectedBy(Range<? extends C> other) {
+    public Range<C> intersect(Range<? extends C> other) {
         C start  = maxOf(startInclusive, other.startInclusive);
         C end    = minOf(endExclusive, other.endExclusive);
         C finalS = minOf(start, end);
         return new Range<>(finalS, end);
-    }
-
-    public static <C extends Comparable<? super C>> C maxOf(C x, C y) {
-        return (x.compareTo(y) > 0) ? x : y;
-    }
-
-    public static <C extends Comparable<? super C>> C minOf(C x, C y) {
-        return (x.compareTo(y) < 0) ? x : y;
     }
 }

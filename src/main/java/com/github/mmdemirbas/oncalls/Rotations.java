@@ -6,6 +6,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+import static com.github.mmdemirbas.oncalls.Utils.reduce;
+
 /**
  * @author Muhammed Demirbaş
  * @since 2018-11-19 17:50
@@ -21,13 +23,8 @@ public final class Rotations<V> {
 
     public Timeline<ZonedDateTime, V> toTimeline(Range<ZonedDateTime> calculationRange) {
         Timeline<ZonedDateTime, V> timeline = Timeline.of();
-        timeline = Utils.reduce(timeline,
-                                rotations,
-                                (acc, rotation) -> acc.mergeWith(rotation.toTimeline(calculationRange)));
-
-        timeline = Utils.reduce(timeline,
-                                globalPatches,
-                                (acc, globalPatch) -> acc.patchWith(globalPatch.limitWith(calculationRange)));
+        timeline = reduce(timeline, rotations, (acc, rotation) -> acc.mergeWith(rotation.toTimeline(calculationRange)));
+        timeline = reduce(timeline, globalPatches, (acc, patch) -> acc.patchWith(patch.limitWith(calculationRange)));
         return timeline;
     }
 }

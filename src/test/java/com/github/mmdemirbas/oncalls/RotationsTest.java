@@ -20,6 +20,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import static com.github.mmdemirbas.oncalls.Utils.map;
+import static com.github.mmdemirbas.oncalls.Utils.pair;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -399,18 +401,17 @@ final class RotationsTest {
                                          List<Rotation<String>> rotations,
                                          List<Interval<Instant, String>> overrides,
                                          Entry<Instant, List<OnCall>>... expecteds) throws Exception {
-        List<Interval<ZonedDateTime, UnaryOperator<List<String>>>> intervals = Utils.map(overrides, override -> {
+        List<Interval<ZonedDateTime, UnaryOperator<List<String>>>> intervals = map(overrides, override -> {
             Range<Instant> range = override.getRange();
-            return Interval.of(instantToZonedDateTime(range.getStartInclusive()),
-                               instantToZonedDateTime(range.getEndExclusive()),
+            return Interval.of(range(range.getStartInclusive(), range.getEndExclusive()),
                                ignored -> asList(override.getValue()));
         });
         Rotations<String> snapshot = rotations.isEmpty()
                                      ? new Rotations<>(rotations, asList(Timeline.of(intervals)))
-                                     : new Rotations<>(Utils.map(rotations,
-                                                                 rotation -> new Rotation<>(rotation.getRecurrence(),
-                                                                                            rotation.getRecipients(),
-                                                                                            asList(Timeline.of(intervals)))),
+                                     : new Rotations<>(map(rotations,
+                                                           rotation -> new Rotation<>(rotation.getRecurrence(),
+                                                                                      rotation.getRecipients(),
+                                                                                      asList(Timeline.of(intervals)))),
                                                        asList());
 
         // execute the method
@@ -419,7 +420,7 @@ final class RotationsTest {
             Instant      time   = expected.getKey();
             long         millis = time.toEpochMilli();
             List<OnCall> actual = getRecipients.apply(snapshot, millis);
-            actuals.add(Utils.pair(time, actual));
+            actuals.add(pair(time, actual));
         }
 
         // compare results
@@ -457,7 +458,7 @@ final class RotationsTest {
     }
 
     private static Entry<Instant, List<OnCall>> expectAt(Instant atTime, OnCall... expecteds) {
-        return Utils.pair(atTime, asList(expecteds));
+        return pair(atTime, asList(expecteds));
     }
 
     private static Rotation<String> rotateForever(Duration rotationPeriod, String... recipients) {
@@ -478,14 +479,13 @@ final class RotationsTest {
                                                 Duration rotationPeriod,
                                                 List<Range<Instant>> restrictions,
                                                 String... recipients) {
-        return new Rotation<>(new Recurrence(Range.of(instantToZonedDateTime(Instant.EPOCH),
-                                                      instantToZonedDateTime(endTime)), rotationPeriod, restrictions),
+        return new Rotation<>(new Recurrence(range(Instant.EPOCH, endTime), rotationPeriod, restrictions),
                               asList(recipients),
                               asList());
     }
 
     private static Interval<Instant, String> overrideBetween(Instant startTime, Instant endTime, String name) {
-        return Interval.of(startTime, endTime, name);
+        return Interval.of(Range.of(startTime, endTime), name);
     }
 
     private static Range<Instant> restrictTo(Instant startTime, Instant endTime) {
@@ -526,7 +526,7 @@ final class RotationsTest {
     }
 
     private static <T> String joinLines(Collection<? extends T> items, Function<? super T, String> toString) {
-        return String.join("\n", Utils.map(items, toString));
+        return String.join("\n", map(items, toString));
     }
 
     private static Instant min(int minute) {
@@ -535,6 +535,10 @@ final class RotationsTest {
 
     private static Instant hour(int hour) {
         return Instant.ofEpochMilli(TimeUnit.HOURS.toMillis(hour));
+    }
+
+    private static Range<ZonedDateTime> range(Instant startTime, Instant endTime) {
+        return Range.of(instantToZonedDateTime(startTime), instantToZonedDateTime(endTime));
     }
 
     private static ZonedDateTime instantToZonedDateTime(Instant instant) {

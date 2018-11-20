@@ -10,20 +10,21 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import static com.github.mmdemirbas.oncalls.Utils.map;
+import static com.github.mmdemirbas.oncalls.Utils.reduce;
+import static com.github.mmdemirbas.oncalls.Utils.sortedBy;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableNavigableMap;
 
 /**
- * Represents an ordered line of {@link Interval}s which are {@link Range}-{@link V} associations.
- * This is a generalization of timeline of events.
+ * Represents a timeline of {@link Interval}s which are {@link Range}s associated with arbitrary values of type {@link V}.
  * <p>
  * This class is immutable if the generic types {@link C} and {@link V} is immutable.
  *
@@ -103,20 +104,19 @@ public final class Timeline<C extends Comparable<? super C>, V> {
             return EMPTY_INTERVAL;
         }
         List<V> value = entry.getValue();
-        return Interval.of(key, nextKey, value);
+        return Interval.of(Range.of(key, nextKey), value);
     }
 
     public <U> Timeline<C, U> mapWith(Function<? super V, ? extends U> mapper) {
-        return new Timeline<>(Utils.map(intervals,
-                                        interval -> Interval.of(interval.getRange(),
-                                                                mapper.apply(interval.getValue()))));
+        return with(interval -> Interval.of(interval.getRange(), mapper.apply(interval.getValue())));
     }
 
-    public Timeline<C, V> limitWith(Range<? extends C> calculationRange) {
-        return new Timeline<>(Utils.map(intervals,
-                                        interval -> Interval.of(interval.getRange()
-                                                                        .intersectedBy(calculationRange),
-                                                                interval.getValue())));
+    public Timeline<C, V> limitWith(Range<C> calculationRange) {
+        return with(interval -> Interval.of(calculationRange.intersect(interval.getRange()), interval.getValue()));
+    }
+
+    private <U> Timeline<C, U> with(Function<Interval<C, V>, Interval<C, U>> mapper) {
+        return new Timeline<>(map(intervals, mapper));
     }
 
     public Timeline<C, V> mergeWith(Timeline<C, ? extends V> other) {
@@ -131,9 +131,9 @@ public final class Timeline<C extends Comparable<? super C>, V> {
     public Timeline<C, V> patchWith(Timeline<C, ? extends UnaryOperator<List<V>>> patchTimeline) {
         return merge(this,
                      patchTimeline,
-                     (values, patches) -> Utils.reduce((List<V>) new ArrayList<>(values),
-                                                       patches,
-                                                       (acc, patch) -> patch.apply(acc)));
+                     (values, patches) -> reduce((List<V>) new ArrayList<>(values),
+                                                 patches,
+                                                 (acc, patch) -> patch.apply(acc)));
     }
 
     private static <C extends Comparable<? super C>, X, Y, Z> Timeline<C, Z> merge(Timeline<C, X> x,
@@ -144,16 +144,13 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         C                    start     = null;
         C                    end       = null;
 
-        Collection<C> keyPoints = new TreeSet<>();
-        keyPoints.addAll(x.intervalMap.keySet());
-        keyPoints.addAll(y.intervalMap.keySet());
-
-        for (C keyPoint : keyPoints) {
+        List<C> keyPointsSorted = sortedBy(it -> it, x.intervalMap.keySet(), y.intervalMap.keySet());
+        for (C keyPoint : keyPointsSorted) {
             end = keyPoint;
-            List<? extends Z> mergedValues = mergeFunction.apply(x.findCurrentInterval(end)
-                                                                  .getValue(),
-                                                                 y.findCurrentInterval(end)
-                                                                  .getValue());
+            Interval<C, List<X>> xInterval    = x.findCurrentInterval(keyPoint);
+            Interval<C, List<Y>> yInterval    = y.findCurrentInterval(keyPoint);
+            List<? extends Z>    mergedValues = mergeFunction.apply(xInterval.getValue(), yInterval.getValue());
+
             if (!values.equals(mergedValues)) {
                 addIntervals(intervals, values, start, end);
                 values = mergedValues;
@@ -188,12 +185,6 @@ public final class Timeline<C extends Comparable<? super C>, V> {
     public static final class Interval<C extends Comparable<? super C>, V> {
         @Getter private final Range<C> range;
         @Getter private final V        value;
-
-        public static <C extends Comparable<? super C>, V> Interval<C, V> of(C startInclusive,
-                                                                             C endExclusive,
-                                                                             V value) {
-            return of(Range.of(startInclusive, endExclusive), value);
-        }
 
         public static <C extends Comparable<? super C>, V> Interval<C, V> of(Range<C> range, V value) {
             return new Interval<>(range, value);

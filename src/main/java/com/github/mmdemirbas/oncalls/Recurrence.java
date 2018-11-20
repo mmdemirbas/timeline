@@ -9,12 +9,11 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
+import static com.github.mmdemirbas.oncalls.Utils.maxOf;
+import static com.github.mmdemirbas.oncalls.Utils.sortedBy;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 
@@ -51,61 +50,48 @@ public final class Recurrence {
      * Empty ranges will not appear in the result set.
      */
     static <C extends Comparable<? super C>> List<Range<C>> toDisjointRanges(Collection<Range<C>> ranges) {
-        List<Range<C>> rangesOrderedByStart = new ArrayList<>(ranges);
-        rangesOrderedByStart.sort(Comparator.comparing(Range::getStartInclusive));
-
-        Iterator<Range<C>> it      = rangesOrderedByStart.iterator();
-        Range<C>           current = nextOrNull(it);
-        Range<C>           next    = nextOrNull(it);
-
         List<Range<C>> disjointRanges = new ArrayList<>();
-        Consumer<Range<C>> yield = range -> {
-            if (!range.isEmpty()) {
-                disjointRanges.add(range);
-            }
-        };
+        C              start          = null;
+        C              end            = null;
 
-        while (next != null) {
-            C currentEnd = current.getEndExclusive();
-            if (currentEnd.compareTo(next.getStartInclusive()) < 0) {
-                yield.accept(current);
+        List<Range<C>> rangesInStartOrder = sortedBy(Range::getStartInclusive, ranges);
+        for (Range<C> range : rangesInStartOrder) {
+            if ((end == null) || (end.compareTo(range.getStartInclusive()) < 0)) {
+                addRange(disjointRanges, start, end);
+                start = range.getStartInclusive();
+                end = range.getEndExclusive();
             } else {
-                do {
-                    currentEnd = Range.maxOf(currentEnd, next.getEndExclusive());
-                    next = nextOrNull(it);
-                } while ((next != null) && (currentEnd.compareTo(next.getStartInclusive()) >= 0));
-
-                yield.accept(Range.of(current.getStartInclusive(), currentEnd));
+                end = maxOf(end, range.getEndExclusive());
             }
-            current = next;
-            next = nextOrNull(it);
         }
-
-        if ((current != null)) {
-            yield.accept(current);
-        }
+        addRange(disjointRanges, start, end);
         return unmodifiableList(disjointRanges);
     }
 
-    private static <T> T nextOrNull(Iterator<? extends T> iterator) {
-        return iterator.hasNext() ? iterator.next() : null;
+    private static <C extends Comparable<? super C>> void addRange(Collection<? super Range<C>> output,
+                                                                   C start,
+                                                                   C end) {
+        if ((start != null) && (end != null)) {
+            Range<C> range = Range.of(start, end);
+            if (!range.isEmpty()) {
+                output.add(range);
+            }
+        }
     }
 
     /**
      * Calculates a timeline at the specified time range mapping the ranges to corresponding iteration indices.
      */
     public Timeline<ZonedDateTime, Long> toTimeline(Range<ZonedDateTime> calculationRange) {
-        Range<ZonedDateTime> effectiveRange = recurrenceRange.intersectedBy(calculationRange);
+        Range<ZonedDateTime> effectiveRange = recurrenceRange.intersect(calculationRange);
         long                 startIndex     = iterationIndexAt(effectiveRange.getStartInclusive());
         long                 endIndex       = iterationIndexAt(effectiveRange.getEndExclusive());
-
-        ZonedDateTime offset = recurrenceRange.getStartInclusive()
-                                              .plus(iterationDuration.multipliedBy(startIndex));
+        ZonedDateTime        offset         = getRecurrenceStart().plus(iterationDuration.multipliedBy(startIndex));
 
         List<Interval<ZonedDateTime, Long>> intervals = new ArrayList<>();
         for (long index = startIndex; index <= endIndex; index++) {
             for (Range<Instant> range : disjointRanges) {
-                intervals.add(Interval.of(sum(range, offset).intersectedBy(effectiveRange), index));
+                intervals.add(Interval.of(sum(range, offset).intersect(effectiveRange), index));
             }
             offset = offset.plus(iterationDuration);
         }
@@ -113,8 +99,12 @@ public final class Recurrence {
     }
 
     private long iterationIndexAt(ZonedDateTime point) {
-        return Duration.between(recurrenceRange.getStartInclusive(), point)
+        return Duration.between(getRecurrenceStart(), point)
                        .toNanos() / iterationDuration.toNanos();
+    }
+
+    private ZonedDateTime getRecurrenceStart() {
+        return recurrenceRange.getStartInclusive();
     }
 
     private static Range<ZonedDateTime> sum(Range<Instant> range, ZonedDateTime offset) {

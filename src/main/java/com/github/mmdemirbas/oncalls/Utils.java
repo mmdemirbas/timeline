@@ -1,8 +1,9 @@
 package com.github.mmdemirbas.oncalls;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Muhammed Demirbaş
@@ -45,5 +47,23 @@ public final class Utils {
             }
         }
         return result;
+    }
+
+    @SafeVarargs
+    public static <T, C extends Comparable<? super C>> List<T> sortedBy(Function<? super T, ? extends C> getter,
+                                                                        Collection<? extends T>... collections) {
+        List<T> copy = new ArrayList<>();
+        Stream.of(collections)
+              .forEach(copy::addAll);
+        copy.sort(Comparator.comparing(getter));
+        return copy;
+    }
+
+    public static <C extends Comparable<? super C>> C maxOf(C x, C y) {
+        return (x.compareTo(y) > 0) ? x : y;
+    }
+
+    public static <C extends Comparable<? super C>> C minOf(C x, C y) {
+        return (x.compareTo(y) < 0) ? x : y;
     }
 }

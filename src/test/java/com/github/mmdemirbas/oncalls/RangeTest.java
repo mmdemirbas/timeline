@@ -62,47 +62,47 @@ final class RangeTest {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
-    void intersectedBy_Disjoint() {
-        assertIntersectedBy(Range.of(3, 3), Range.of(1, 3), Range.of(5, 7));
+    void intersect_Disjoint() {
+        assertIntersect(Range.of(3, 3), Range.of(1, 3), Range.of(5, 7));
     }
 
     @Test
-    void intersectedBy_Successive() {
-        assertIntersectedBy(Range.of(3, 3), Range.of(1, 3), Range.of(3, 5));
+    void intersect_Successive() {
+        assertIntersect(Range.of(3, 3), Range.of(1, 3), Range.of(3, 5));
     }
 
     @Test
-    void intersectedBy_Intersecting() {
-        assertIntersectedBy(Range.of(3, 5), Range.of(1, 5), Range.of(3, 7));
+    void intersect_Intersecting() {
+        assertIntersect(Range.of(3, 5), Range.of(1, 5), Range.of(3, 7));
     }
 
     @Test
-    void intersectedBy_OverlappingWithSameEnd() {
-        assertIntersectedBy(Range.of(3, 5), Range.of(1, 5), Range.of(3, 5));
+    void intersect_OverlappingWithSameEnd() {
+        assertIntersect(Range.of(3, 5), Range.of(1, 5), Range.of(3, 5));
     }
 
     @Test
-    void intersectedBy_OverlappingWithSameStart() {
-        assertIntersectedBy(Range.of(1, 3), Range.of(1, 5), Range.of(1, 3));
+    void intersect_OverlappingWithSameStart() {
+        assertIntersect(Range.of(1, 3), Range.of(1, 5), Range.of(1, 3));
     }
 
     @Test
-    void intersectedBy_Containing() {
-        assertIntersectedBy(Range.of(3, 5), Range.of(1, 7), Range.of(3, 5));
+    void intersect_Containing() {
+        assertIntersect(Range.of(3, 5), Range.of(1, 7), Range.of(3, 5));
     }
 
     @Test
-    void intersectedBy_Equal() {
-        assertIntersectedBy(Range.of(1, 3), Range.of(1, 3), Range.of(1, 3));
+    void intersect_Equal() {
+        assertIntersect(Range.of(1, 3), Range.of(1, 3), Range.of(1, 3));
     }
 
     @Test
-    void intersectedBy_EmptyRange() {
-        assertIntersectedBy(Range.of(1, 1), Range.of(1, 1), Range.of(2, 2));
+    void intersect_EmptyRange() {
+        assertIntersect(Range.of(1, 1), Range.of(1, 1), Range.of(2, 2));
     }
 
-    private static void assertIntersectedBy(Range<Integer> expected, Range<Integer> left, Range<Integer> right) {
-        assertEquals(expected, left.intersectedBy(right));
+    private static void assertIntersect(Range<Integer> expected, Range<Integer> left, Range<Integer> right) {
+        assertEquals(expected, left.intersect(right));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
