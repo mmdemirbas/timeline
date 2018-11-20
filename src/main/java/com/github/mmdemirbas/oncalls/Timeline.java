@@ -1,23 +1,21 @@
 package com.github.mmdemirbas.oncalls;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static com.github.mmdemirbas.oncalls.Utils.map;
 import static com.github.mmdemirbas.oncalls.Utils.reduce;
-import static com.github.mmdemirbas.oncalls.Utils.sortedBy;
+import static com.github.mmdemirbas.oncalls.Utils.sorted;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
@@ -31,8 +29,6 @@ import static java.util.Collections.unmodifiableNavigableMap;
  * @author Muhammed Demirbaş
  * @since 2018-11-18 09:55
  */
-@ToString
-@EqualsAndHashCode
 public final class Timeline<C extends Comparable<? super C>, V> {
     private static final Interval EMPTY_INTERVAL = Interval.of(null, emptyList());
 
@@ -57,29 +53,35 @@ public final class Timeline<C extends Comparable<? super C>, V> {
      * Builds an interval map which can be considered as another form of an "interval tree".
      */
     private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(Iterable<Interval<C, V>> intervals) {
+        NavigableMap<C, List<V>> add           = indexBy(intervals, Range::getStartInclusive);
+        NavigableMap<C, List<V>> remove        = indexBy(intervals, Range::getEndExclusive);
         NavigableMap<C, List<V>> intervalMap   = new TreeMap<>();
         List<V>                  ongoingEvents = new ArrayList<>();
-        buildChangePointsMap(intervals).forEach((point, changes) -> {
-            changes.forEach(change -> change.accept(ongoingEvents));
+
+        sorted(add.keySet(), remove.keySet()).forEach(point -> {
+            ongoingEvents.addAll(orEmpty(add.get(point)));
+            ongoingEvents.removeAll(orEmpty(remove.get(point)));
             intervalMap.put(point, unmodifiableList(new ArrayList<>(ongoingEvents)));
         });
         return unmodifiableNavigableMap(intervalMap);
     }
 
-    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<Consumer<List<V>>>> buildChangePointsMap(
-            Iterable<Interval<C, V>> intervals) {
-        // todo: add ve remove'lar ayrı listelerde tutulabilir, daha basit olur
-        NavigableMap<C, List<Consumer<List<V>>>> changePoints = new TreeMap<>();
+    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> indexBy(Iterable<Interval<C, V>> intervals,
+                                                                                         Function<? super Range<C>, ? extends C> fn) {
+        NavigableMap<C, List<V>> index = new TreeMap<>();
         intervals.forEach(interval -> {
             Range<C> range = interval.getRange();
             if (!range.isEmpty()) {
-                changePoints.computeIfAbsent(range.getStartInclusive(), x -> new ArrayList<>())
-                            .add(list -> list.add(interval.getValue()));
-                changePoints.computeIfAbsent(range.getEndExclusive(), x -> new ArrayList<>())
-                            .add(list -> list.remove(interval.getValue()));
+                C       key    = fn.apply(range);
+                List<V> values = index.computeIfAbsent(key, x -> new ArrayList<>());
+                values.add(interval.getValue());
             }
         });
-        return changePoints;
+        return index;
+    }
+
+    private static <V> List<V> orEmpty(List<V> input) {
+        return (input == null) ? emptyList() : input;
     }
 
     // todo: tests & javadocs
@@ -144,7 +146,7 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         C                    start     = null;
         C                    end       = null;
 
-        List<C> keyPointsSorted = sortedBy(it -> it, x.intervalMap.keySet(), y.intervalMap.keySet());
+        Set<C> keyPointsSorted = sorted(x.intervalMap.keySet(), y.intervalMap.keySet());
         for (C keyPoint : keyPointsSorted) {
             end = keyPoint;
             Interval<C, List<X>> xInterval    = x.findCurrentInterval(keyPoint);
@@ -180,8 +182,6 @@ public final class Timeline<C extends Comparable<? super C>, V> {
      * @author Muhammed Demirbaş
      * @since 2018-11-18 09:54
      */
-    @ToString
-    @EqualsAndHashCode
     public static final class Interval<C extends Comparable<? super C>, V> {
         @Getter private final Range<C> range;
         @Getter private final V        value;

@@ -1,13 +1,14 @@
 package com.github.mmdemirbas.oncalls;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,12 +51,16 @@ public final class Utils {
     }
 
     @SafeVarargs
-    public static <T, C extends Comparable<? super C>> List<T> sortedBy(Function<? super T, ? extends C> getter,
-                                                                        Collection<? extends T>... collections) {
-        List<T> copy = new ArrayList<>();
+    public static <C extends Comparable<? super C>> Set<C> sorted(Collection<? extends C>... collections) {
+        return sortedBy(it -> it, collections);
+    }
+
+    @SafeVarargs
+    public static <T, C extends Comparable<? super C>> Set<T> sortedBy(Function<? super T, ? extends C> getter,
+                                                                       Collection<? extends T>... collections) {
+        Set<T> copy = new TreeSet<>(Comparator.comparing(getter));
         Stream.of(collections)
               .forEach(copy::addAll);
-        copy.sort(Comparator.comparing(getter));
         return copy;
     }
 

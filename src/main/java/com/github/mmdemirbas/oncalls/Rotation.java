@@ -13,9 +13,9 @@ import static com.github.mmdemirbas.oncalls.Utils.reduce;
  * @since 2018-11-19 17:51
  */
 public final class Rotation<V> {
-    @Getter private final Recurrence                                            recurrence;
-    @Getter private final List<V>                                               recipients;
-    @Getter private final List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> patches;
+    @Getter private final Recurrence                                            recurrence; // todo: break need to getter and remove it
+    @Getter private final List<V>                                               recipients; // todo: break need to getter and remove it & ensure this is immutable
+    private final         List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> patches; // // todo: ensure this is immutable
 
     public Rotation(Recurrence recurrence,
                     List<V> recipients,

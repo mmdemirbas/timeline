@@ -10,13 +10,11 @@ import static com.github.mmdemirbas.oncalls.Utils.maxOf;
 import static com.github.mmdemirbas.oncalls.Utils.minOf;
 
 /**
- * Represents a range between two {@link Comparable} types with an inclusive start point
- * and exclusive end point as in the following mathematical notation:
- * <pre>
- *     new Range<>(20, 80) => [20,80)
- * </pre>
+ * Represents a range between two {@link Comparable} types.
  * <p>
- * This class is immutable if the generic {@link C} type is immutable.
+ * Start point is inclusive, and end point is exclusive as in the mathematical notation {@code  [20,80)}.
+ * <p>
+ * This class is immutable if the generic type {@link C} is immutable.
  *
  * @author Muhammed Demirbaş
  * @since 2018-11-17 11:55

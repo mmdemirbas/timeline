@@ -400,7 +400,7 @@ final class RotationsTest {
     private static void assertRecipients(BiFunction<Rotations<String>, Long, List<OnCall>> getRecipients,
                                          List<Rotation<String>> rotations,
                                          List<Interval<Instant, String>> overrides,
-                                         Entry<Instant, List<OnCall>>... expecteds) throws Exception {
+                                         Entry<Instant, List<OnCall>>... expecteds) {
         List<Interval<ZonedDateTime, UnaryOperator<List<String>>>> intervals = map(overrides, override -> {
             Range<Instant> range = override.getRange();
             return Interval.of(range(range.getStartInclusive(), range.getEndExclusive()),

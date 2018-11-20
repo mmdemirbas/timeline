@@ -1,7 +1,6 @@
 package com.github.mmdemirbas.oncalls;
 
 import com.github.mmdemirbas.oncalls.Timeline.Interval;
-import lombok.Getter;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -10,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.mmdemirbas.oncalls.Utils.maxOf;
@@ -18,17 +18,15 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 
 /**
- * Represents a recurring period on the time line.
- * <p>
- * This class is immutable.
+ * An immutable representation of a recurring period on the time line.
  *
  * @author Muhammed Demirbaş
  * @since 2018-11-19 14:48
  */
 public final class Recurrence {
-    @Getter private final Range<ZonedDateTime> recurrenceRange;
-    @Getter private final Duration             iterationDuration;
-    @Getter private final List<Range<Instant>> disjointRanges;
+    private final Range<ZonedDateTime> recurrenceRange;
+    private final Duration             iterationDuration;
+    private final List<Range<Instant>> disjointRanges;
 
     public Recurrence(Range<ZonedDateTime> recurrenceRange,
                       Duration iterationDuration,
@@ -54,7 +52,7 @@ public final class Recurrence {
         C              start          = null;
         C              end            = null;
 
-        List<Range<C>> rangesInStartOrder = sortedBy(Range::getStartInclusive, ranges);
+        Set<Range<C>> rangesInStartOrder = sortedBy(Range::getStartInclusive, ranges);
         for (Range<C> range : rangesInStartOrder) {
             if ((end == null) || (end.compareTo(range.getStartInclusive()) < 0)) {
                 addRange(disjointRanges, start, end);
