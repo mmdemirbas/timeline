@@ -24,9 +24,6 @@ import static java.util.Objects.requireNonNull;
  * Attempt to create a range with an end value smaller than the start value results with an exception.
  * <p>
  * This class is immutable if the generic type {@link C} is immutable.
- *
- * @author Muhammed Demirbaş
- * @since 2018-11-17 11:55
  */
 @Value
 public final class Range<C extends Comparable<? super C>> {

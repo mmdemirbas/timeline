@@ -9,13 +9,7 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * @author Muhammed Demirbaş
- * @since 2018-11-17 11:57
- */
 final class RangeTest {
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     void of_NonEmpty() {

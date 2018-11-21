@@ -1,7 +1,9 @@
 package com.github.mmdemirbas.oncalls;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,10 +18,6 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 
-/**
- * @author Muhammed Demirbaş
- * @since 2018-11-19 12:20
- */
 public final class Utils {
     // todo: eliminate nulls as much as possible, and document null-safety in javadocs
 
@@ -28,6 +26,10 @@ public final class Utils {
     // todo: move other common parts from comlex classes like Recurrence & Timeline
 
     // todo: document type params
+
+    // todo: release a major version when ready
+
+    // todo: rename oncalls -> timeline
 
     @SafeVarargs
     public static <K, V> Map<K, V> mapOf(Entry<K, V>... entries) {
@@ -78,5 +80,9 @@ public final class Utils {
 
     public static <C extends Comparable<? super C>> C minOf(C x, C y) {
         return (x.compareTo(y) < 0) ? x : y;
+    }
+
+    public static <T> List<T> unmodifiableCopyOf(List<T> list) {
+        return Collections.unmodifiableList(new ArrayList<>(list));
     }
 }

@@ -18,29 +18,30 @@ Written in pure Java using zero runtime dependency.
 
 ![](doc/uml.png)
 
-`Range` is a pair of `Comparable` values which interpreted as start
-and end points of a range. This is the simplest data structure in the
-library.
+`Range` is a pair of `Comparable` values (start & end points).
+This is the simplest data structure in the library.
 
-`Timeline` is a finite segment of `Comparable` values which allows to
-associate its arbitrary sub-segments (`Interval`s) with a list of
-arbitrary values. This is the most important and most complex
-data structure in the library. It has ~200 lines including comments &
-empty lines which is not so complex actually.
+`Timeline` is the base interface. It has only one method.
 
-`Recurrence` interface represents a periodically recurring interval
-of `Comparable` values. Currently, only implementation is
-`ZonedDateTimeRecurrence` which is the sole class mentioning `java.time`
-package. So, you can easily port whole functionality to another domain
-simply by implementing `Recurrence` interface.
+`StaticTimeline` is a finite segment of `Comparable` values which allows
+to associate its arbitrary sub-segments (`Interval`s) with a list of
+arbitrary values. The implementation utilises `NavigableMap` as
+'interval map' (consider as another representation of 'interval tree').
+`StaticTimeline` is the most important and most complex data structure
+in the library. Actually, it has 150+ lines of code which is not
+so complex tough.
 
-`Rotation` assigns a given list of recipients to iterations of a
-`Recurrence` one-by-one. This class also adds patch support on top of
-those iterations. Patch support is the capability to change recipients
-in any part of the Timeline.
+`UnionTimeline` is a union of contained timelines, as the name suggests.
 
-`Rotations` is basically a list of `Rotation`s, plus patch support
-on top of that.
+`PatchedTimeline` is a timeline which adds patch support on top of a
+base timeline. Patch support is the ability to add, remove, or change
+associated values in any part of the timeline.
+
+`ZonedRotationTimeline` represents periodically recurring intervals of a
+fixed duration, and assigns the given list of recipients to iterations
+one-by-one . This is the only class mentioning `java.time` package.
+Unlike previous ones which leaves time point type `C` as generic, this
+implementation hard-codes the time point type as `ZonedDateTime`.
 
 
 ## TODO
