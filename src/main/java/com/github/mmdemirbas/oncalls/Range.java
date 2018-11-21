@@ -2,10 +2,16 @@ package com.github.mmdemirbas.oncalls;
 
 import lombok.Value;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.github.mmdemirbas.oncalls.Utils.maxOf;
 import static com.github.mmdemirbas.oncalls.Utils.minOf;
+import static com.github.mmdemirbas.oncalls.Utils.sortedBy;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * Represents a range between two {@link Comparable} types.
@@ -59,5 +65,41 @@ public final class Range<C extends Comparable<? super C>> {
         C end    = minOf(endExclusive, other.endExclusive);
         C finalS = minOf(start, end);
         return new Range<>(finalS, end);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns a set of disjoint ranges by joining intersecting, overlapping and successive ranges.
+     * Empty ranges will not appear in the result set.
+     */
+    public static <C extends Comparable<? super C>> List<Range<C>> toDisjointRanges(Collection<Range<C>> ranges) {
+        List<Range<C>> disjointRanges = new ArrayList<>();
+        C              start          = null;
+        C              end            = null;
+
+        Set<Range<C>> rangesInStartOrder = sortedBy(Range::getStartInclusive, ranges);
+        for (Range<C> range : rangesInStartOrder) {
+            if ((end == null) || (end.compareTo(range.getStartInclusive()) < 0)) {
+                addRange(disjointRanges, start, end);
+                start = range.getStartInclusive();
+                end = range.getEndExclusive();
+            } else {
+                end = maxOf(end, range.getEndExclusive());
+            }
+        }
+        addRange(disjointRanges, start, end);
+        return unmodifiableList(disjointRanges);
+    }
+
+    private static <C extends Comparable<? super C>> void addRange(Collection<? super Range<C>> output,
+                                                                   C start,
+                                                                   C end) {
+        if ((start != null) && (end != null)) {
+            Range<C> range = of(start, end);
+            if (!range.isEmpty()) {
+                output.add(range);
+            }
+        }
     }
 }

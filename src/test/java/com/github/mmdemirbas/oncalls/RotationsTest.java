@@ -400,8 +400,8 @@ final class RotationsTest {
         }
     }
 
-    private static void assertRecipients(BiFunction<Rotations<String>, Long, List<OnCall>> getRecipients,
-                                         List<Rotation<String>> rotations,
+    private static void assertRecipients(BiFunction<Rotations<ZonedDateTime, String>, Long, List<OnCall>> getRecipients,
+                                         List<Rotation<ZonedDateTime, String>> rotations,
                                          List<Interval<Instant, String>> overrides,
                                          Entry<Instant, List<OnCall>>... expecteds) {
         List<Interval<ZonedDateTime, UnaryOperator<List<String>>>> intervals = map(overrides, override -> {
@@ -409,13 +409,15 @@ final class RotationsTest {
             return Interval.of(range(range.getStartInclusive(), range.getEndExclusive()),
                                ignored -> asList(override.getValue()));
         });
-        Rotations<String> snapshot = rotations.isEmpty()
-                                     ? new Rotations<>(rotations, asList(Timeline.of(intervals)))
-                                     : new Rotations<>(map(rotations,
-                                                           rotation -> new Rotation<>(rotation.getRecurrence(),
-                                                                                      rotation.getRecipients(),
-                                                                                      asList(Timeline.of(intervals)))),
-                                                       asList());
+        Rotations<ZonedDateTime, String> snapshot = rotations.isEmpty()
+                                                    ? new Rotations<>(rotations,
+                                                                      asList(Timeline.of(intervals)))
+                                                    : new Rotations<>(map(rotations,
+                                                                          rotation -> new Rotation<>(rotation.getRecurrence(),
+                                                                                                     rotation.getRecipients(),
+                                                                                                     asList(Timeline.of(
+                                                                                                             intervals)))),
+                                                                      asList());
 
         // execute the method
         List<Entry<Instant, List<OnCall>>> actuals = new ArrayList<>();
@@ -431,7 +433,7 @@ final class RotationsTest {
         assertEquals(format(asList(expecteds)), format(actuals));
     }
 
-    private static List<OnCall> getRecipientsWithInterval(Rotations<String> rotations, long millis) {
+    private static List<OnCall> getRecipientsWithInterval(Rotations<ZonedDateTime, String> rotations, long millis) {
         ZonedDateTime                   dateTime         = instantToZonedDateTime(Instant.ofEpochMilli(millis));
         ZonedDateTime                   oneMonthBefore   = dateTime.minus(1, ChronoUnit.MONTHS);
         ZonedDateTime                   oneMonthAfter    = dateTime.plus(1, ChronoUnit.MONTHS);
@@ -464,25 +466,27 @@ final class RotationsTest {
         return pair(atTime, asList(expecteds));
     }
 
-    private static Rotation<String> rotateForever(Duration rotationPeriod, String... recipients) {
+    private static Rotation<ZonedDateTime, String> rotateForever(Duration rotationPeriod, String... recipients) {
         return rotateForever(rotationPeriod, asList(), recipients);
     }
 
-    private static Rotation<String> rotateForever(Duration rotationPeriod,
-                                                  List<Range<Instant>> restrictions,
-                                                  String... recipients) {
+    private static Rotation<ZonedDateTime, String> rotateForever(Duration rotationPeriod,
+                                                                 List<Range<Instant>> restrictions,
+                                                                 String... recipients) {
         return rotateUntil(Instant.ofEpochMilli(Long.MAX_VALUE), rotationPeriod, restrictions, recipients);
     }
 
-    private static Rotation<String> rotateUntil(Instant endTime, Duration rotationPeriod, String... recipients) {
+    private static Rotation<ZonedDateTime, String> rotateUntil(Instant endTime,
+                                                               Duration rotationPeriod,
+                                                               String... recipients) {
         return rotateUntil(endTime, rotationPeriod, asList(), recipients);
     }
 
-    private static Rotation<String> rotateUntil(Instant endTime,
-                                                Duration rotationPeriod,
-                                                List<Range<Instant>> restrictions,
-                                                String... recipients) {
-        return new Rotation<>(new Recurrence(range(ZERO, endTime), rotationPeriod, restrictions),
+    private static Rotation<ZonedDateTime, String> rotateUntil(Instant endTime,
+                                                               Duration rotationPeriod,
+                                                               List<Range<Instant>> restrictions,
+                                                               String... recipients) {
+        return new Rotation<>(new ZonedDateTimeRecurrence(range(ZERO, endTime), rotationPeriod, restrictions),
                               asList(recipients),
                               asList());
     }

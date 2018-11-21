@@ -19,58 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Muhammed Demirbaş
  * @since 2018-11-19 14:55
  */
-final class RecurrenceTest {
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    @Test
-    void toDisjointRanges_NoRange() {
-        assertDisjointRanges(asList(), asList());
-    }
-
-    @Test
-    void toDisjointRanges_EmptyRange() {
-        assertDisjointRanges(asList(), asList(Range.of(2, 2)));
-    }
-
-    @Test
-    void toDisjointRanges_EmptyRanges() {
-        assertDisjointRanges(asList(), asList(Range.of(1, 1), Range.of(5, 5)));
-    }
-
-    @Test
-    void toDisjointRanges_SingleRange() {
-        assertDisjointRanges(asList(Range.of(2, 4)), asList(Range.of(2, 4)));
-    }
-
-    @Test
-    void toDisjointRanges_DisjointRanges() {
-        assertDisjointRanges(asList(Range.of(2, 4), Range.of(8, 10)), asList(Range.of(2, 4), Range.of(8, 10)));
-    }
-
-    @Test
-    void toDisjointRanges_SuccessiveRanges() {
-        assertDisjointRanges(asList(Range.of(2, 8)), asList(Range.of(2, 4), Range.of(4, 8)));
-    }
-
-    @Test
-    void toDisjointRanges_IntersectingRanges() {
-        assertDisjointRanges(asList(Range.of(2, 8)), asList(Range.of(2, 6), Range.of(4, 8)));
-    }
-
-    @Test
-    void toDisjointRanges_OverlappingRanges() {
-        assertDisjointRanges(asList(Range.of(2, 8)), asList(Range.of(2, 8), Range.of(4, 6)));
-    }
-
-    @Test
-    void toDisjointRanges_DuplicateRanges() {
-        assertDisjointRanges(asList(Range.of(2, 8)), asList(Range.of(2, 8), Range.of(2, 8)));
-    }
-
-    private static void assertDisjointRanges(List<Range<Integer>> expected, Collection<Range<Integer>> ranges) {
-        assertEquals(expected, Recurrence.toDisjointRanges(ranges));
-    }
+final class ZonedDateTimeRecurrenceTest {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -201,8 +150,10 @@ final class RecurrenceTest {
                                        Collection<Range<Instant>> subRanges,
                                        Range<ZonedDateTime> calculationRange,
                                        Map<ZonedDateTime, List<Long>> expected) {
-        Recurrence                    recurrence = new Recurrence(recurrenceRange, iterationDuration, subRanges);
-        Timeline<ZonedDateTime, Long> timeline   = recurrence.toTimeline(calculationRange);
+        Recurrence<ZonedDateTime> recurrence = new ZonedDateTimeRecurrence(recurrenceRange,
+                                                                           iterationDuration,
+                                                                           subRanges);
+        Timeline<ZonedDateTime, Long> timeline = recurrence.toTimeline(calculationRange);
         assertEquals(expected, timeline.getIntervalMap());
     }
 

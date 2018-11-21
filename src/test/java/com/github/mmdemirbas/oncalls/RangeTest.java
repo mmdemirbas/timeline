@@ -2,6 +2,10 @@ package com.github.mmdemirbas.oncalls;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
+import java.util.List;
+
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -103,6 +107,57 @@ final class RangeTest {
 
     private static void assertIntersect(Range<Integer> expected, Range<Integer> left, Range<Integer> right) {
         assertEquals(expected, left.intersect(right));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    void toDisjointRanges_NoRange() {
+        assertDisjointRanges(asList(), asList());
+    }
+
+    @Test
+    void toDisjointRanges_EmptyRange() {
+        assertDisjointRanges(asList(), asList(Range.of(2, 2)));
+    }
+
+    @Test
+    void toDisjointRanges_EmptyRanges() {
+        assertDisjointRanges(asList(), asList(Range.of(1, 1), Range.of(5, 5)));
+    }
+
+    @Test
+    void toDisjointRanges_SingleRange() {
+        assertDisjointRanges(asList(Range.of(2, 4)), asList(Range.of(2, 4)));
+    }
+
+    @Test
+    void toDisjointRanges_DisjointRanges() {
+        assertDisjointRanges(asList(Range.of(2, 4), Range.of(8, 10)), asList(Range.of(2, 4), Range.of(8, 10)));
+    }
+
+    @Test
+    void toDisjointRanges_SuccessiveRanges() {
+        assertDisjointRanges(asList(Range.of(2, 8)), asList(Range.of(2, 4), Range.of(4, 8)));
+    }
+
+    @Test
+    void toDisjointRanges_IntersectingRanges() {
+        assertDisjointRanges(asList(Range.of(2, 8)), asList(Range.of(2, 6), Range.of(4, 8)));
+    }
+
+    @Test
+    void toDisjointRanges_OverlappingRanges() {
+        assertDisjointRanges(asList(Range.of(2, 8)), asList(Range.of(2, 8), Range.of(4, 6)));
+    }
+
+    @Test
+    void toDisjointRanges_DuplicateRanges() {
+        assertDisjointRanges(asList(Range.of(2, 8)), asList(Range.of(2, 8), Range.of(2, 8)));
+    }
+
+    private static void assertDisjointRanges(List<Range<Integer>> expected, Collection<Range<Integer>> ranges) {
+        assertEquals(expected, Range.toDisjointRanges(ranges));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
