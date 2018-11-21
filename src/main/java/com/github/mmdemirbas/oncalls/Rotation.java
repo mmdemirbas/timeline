@@ -13,13 +13,14 @@ import static java.util.Collections.emptyList;
  * @since 2018-11-19 17:51
  */
 @Value
-public final class Rotation<C extends Comparable<? super C>, V> {
+public final class Rotation<C extends Comparable<? super C>, V> implements ToTimeline<C, V> {
     Recurrence<C>                             recurrence;
     List<V>                                   recipients; // todo:ensure this is immutable
     List<Timeline<C, UnaryOperator<List<V>>>> patches; // // todo: ensure this is immutable
 
     // todo: should I write tests for Rotation even Rotations have tests?
 
+    @Override
     public Timeline<C, V> toTimeline(Range<? extends C> calculationRange) {
         Timeline<C, V> timeline;
         if (recipients.isEmpty()) {
@@ -28,7 +29,7 @@ public final class Rotation<C extends Comparable<? super C>, V> {
             Timeline<C, Long> iterations = recurrence.toTimeline(calculationRange);
             timeline = iterations.mapWith(index -> recipients.get((int) (index % recipients.size())));
         }
-        timeline = reduce(timeline, patches, (acc, patch) -> acc.patchWith(patch.limitWith(calculationRange)));
+        timeline = reduce(timeline, patches, (acc, patch) -> acc.patchWith(patch.toTimeline(calculationRange)));
         return timeline;
     }
 }

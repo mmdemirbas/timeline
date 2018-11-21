@@ -6,10 +6,11 @@ package com.github.mmdemirbas.oncalls;
  * @author Muhammed Demirbaş
  * @since 2018-11-21 04:04
  */
-public interface Recurrence<C extends Comparable<? super C>> {
+public interface Recurrence<C extends Comparable<? super C>> extends ToTimeline<C, Long> {
     /**
      * Builds a timeline for the specified range by associating
      * the ranges with the corresponding iteration indices.
      */
+    @Override
     Timeline<C, Long> toTimeline(Range<? extends C> calculationRange);
 }

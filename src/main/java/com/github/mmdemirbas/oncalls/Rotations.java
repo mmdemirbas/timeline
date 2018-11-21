@@ -13,14 +13,15 @@ import static java.util.Collections.emptyList;
  * @since 2018-11-19 17:50
  */
 @Value
-public final class Rotations<C extends Comparable<? super C>, V> {
+public final class Rotations<C extends Comparable<? super C>, V> implements ToTimeline<C, V> {
     List<Rotation<C, V>>                      rotations; // todo: ensure this is immutable
     List<Timeline<C, UnaryOperator<List<V>>>> globalPatches; // todo: ensure this is immutable
 
+    @Override
     public Timeline<C, V> toTimeline(Range<? extends C> calculationRange) {
         Timeline<C, V> timeline = Timeline.of(emptyList());
         timeline = reduce(timeline, rotations, (acc, rotation) -> acc.mergeWith(rotation.toTimeline(calculationRange)));
-        timeline = reduce(timeline, globalPatches, (acc, patch) -> acc.patchWith(patch.limitWith(calculationRange)));
+        timeline = reduce(timeline, globalPatches, (acc, patch) -> acc.patchWith(patch.toTimeline(calculationRange)));
         return timeline;
     }
 }

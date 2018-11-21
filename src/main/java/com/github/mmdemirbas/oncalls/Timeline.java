@@ -27,7 +27,7 @@ import static java.util.Collections.unmodifiableNavigableMap;
  * @since 2018-11-18 09:55
  */
 @Value
-public final class Timeline<C extends Comparable<? super C>, V> {
+public final class Timeline<C extends Comparable<? super C>, V> implements ToTimeline<C, V> {
     private static final Interval EMPTY_INTERVAL = new Interval(null, emptyList());
 
     NavigableMap<C, List<V>> intervalMap;
@@ -103,10 +103,11 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         return new Timeline<>(map);
     }
 
-    public Timeline<C, V> limitWith(Range<? extends C> range) {
+    @Override
+    public Timeline<C, V> toTimeline(Range<? extends C> calculationRange) {
         // todo: write tests & javadocs
-        C                        start = range.getStartInclusive();
-        C                        end   = range.getEndExclusive();
+        C                        start = calculationRange.getStartInclusive();
+        C                        end   = calculationRange.getEndExclusive();
         NavigableMap<C, List<V>> map   = new TreeMap<>(intervalMap.subMap(start, end));
 
         List<V> startValue = valueOrEmpty(intervalMap.floorEntry(start));
