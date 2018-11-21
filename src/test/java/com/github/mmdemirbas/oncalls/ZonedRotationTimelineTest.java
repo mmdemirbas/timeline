@@ -60,8 +60,10 @@ final class ZonedRotationTimelineTest {
         assertTimeline(range(10, 30),
                        iteration(10),
                        asList(),
-                       range(0, 50), mapOf(pair(zonedDateTime(10), asList(0)), pair(zonedDateTime(20), asList(1)),
-                                           pair(zonedDateTime(30), asList())));
+                       range(0, 50),
+                       mapOf(pair(zonedDateTime(10), asList(0)),
+                             pair(zonedDateTime(20), asList(1)),
+                             pair(zonedDateTime(30), asList())));
     }
 
     @Test
@@ -69,8 +71,10 @@ final class ZonedRotationTimelineTest {
         assertTimeline(range(0, 50),
                        iteration(10),
                        asList(),
-                       range(10, 30), mapOf(pair(zonedDateTime(10), asList(1)), pair(zonedDateTime(20), asList(2)),
-                                            pair(zonedDateTime(30), asList())));
+                       range(10, 30),
+                       mapOf(pair(zonedDateTime(10), asList(1)),
+                             pair(zonedDateTime(20), asList(2)),
+                             pair(zonedDateTime(30), asList())));
     }
 
     @Test
@@ -90,10 +94,13 @@ final class ZonedRotationTimelineTest {
         assertTimeline(range(0, 30),
                        iteration(10),
                        asList(subrange(3, 7)),
-                       range(0, 30), mapOf(pair(zonedDateTime(3), asList(0)),
-                                           pair(zonedDateTime(7), asList()), pair(zonedDateTime(13), asList(1)),
-                                           pair(zonedDateTime(17), asList()), pair(zonedDateTime(23), asList(2)),
-                                           pair(zonedDateTime(27), asList())));
+                       range(0, 30),
+                       mapOf(pair(zonedDateTime(3), asList(0)),
+                             pair(zonedDateTime(7), asList()),
+                             pair(zonedDateTime(13), asList(1)),
+                             pair(zonedDateTime(17), asList()),
+                             pair(zonedDateTime(23), asList(2)),
+                             pair(zonedDateTime(27), asList())));
     }
 
     @Test
@@ -101,13 +108,19 @@ final class ZonedRotationTimelineTest {
         assertTimeline(range(0, 30),
                        iteration(10),
                        asList(subrange(3, 5), subrange(7, 9)),
-                       range(0, 30), mapOf(pair(zonedDateTime(3), asList(0)),
-                                           pair(zonedDateTime(5), asList()), pair(zonedDateTime(7), asList(0)),
-                                           pair(zonedDateTime(9), asList()), pair(zonedDateTime(13), asList(1)),
-                                           pair(zonedDateTime(15), asList()), pair(zonedDateTime(17), asList(1)),
-                                           pair(zonedDateTime(19), asList()), pair(zonedDateTime(23), asList(2)),
-                                           pair(zonedDateTime(25), asList()), pair(zonedDateTime(27), asList(2)),
-                                           pair(zonedDateTime(29), asList())));
+                       range(0, 30),
+                       mapOf(pair(zonedDateTime(3), asList(0)),
+                             pair(zonedDateTime(5), asList()),
+                             pair(zonedDateTime(7), asList(0)),
+                             pair(zonedDateTime(9), asList()),
+                             pair(zonedDateTime(13), asList(1)),
+                             pair(zonedDateTime(15), asList()),
+                             pair(zonedDateTime(17), asList(1)),
+                             pair(zonedDateTime(19), asList()),
+                             pair(zonedDateTime(23), asList(2)),
+                             pair(zonedDateTime(25), asList()),
+                             pair(zonedDateTime(27), asList(2)),
+                             pair(zonedDateTime(29), asList())));
     }
 
     @Test
@@ -115,11 +128,15 @@ final class ZonedRotationTimelineTest {
         assertTimeline(range(0, 30),
                        iteration(10),
                        asList(subrange(3, 5), subrange(7, 9)),
-                       range(14, 28), mapOf(pair(zonedDateTime(14), asList(1)),
-                                            pair(zonedDateTime(15), asList()), pair(zonedDateTime(17), asList(1)),
-                                            pair(zonedDateTime(19), asList()), pair(zonedDateTime(23), asList(2)),
-                                            pair(zonedDateTime(25), asList()), pair(zonedDateTime(27), asList(2)),
-                                            pair(zonedDateTime(28), asList())));
+                       range(14, 28),
+                       mapOf(pair(zonedDateTime(14), asList(1)),
+                             pair(zonedDateTime(15), asList()),
+                             pair(zonedDateTime(17), asList(1)),
+                             pair(zonedDateTime(19), asList()),
+                             pair(zonedDateTime(23), asList(2)),
+                             pair(zonedDateTime(25), asList()),
+                             pair(zonedDateTime(27), asList(2)),
+                             pair(zonedDateTime(28), asList())));
     }
 
     private static void assertTimeline(Range<ZonedDateTime> recurrenceRange,

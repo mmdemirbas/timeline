@@ -19,17 +19,13 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public final class Utils {
-    // todo: eliminate nulls as much as possible, and document null-safety in javadocs
+    // todo: put a visualization of timelines to README
 
     // todo: write tests for Utils
 
-    // todo: move other common parts from comlex classes like Recurrence & Timeline
-
-    // todo: document type params
+    // todo: write tests for StaticTimeline
 
     // todo: release a major version when ready
-
-    // todo: rename oncalls -> timeline
 
     @SafeVarargs
     public static <K, V> Map<K, V> mapOf(Entry<K, V>... entries) {

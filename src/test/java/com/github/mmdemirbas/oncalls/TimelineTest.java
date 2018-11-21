@@ -395,21 +395,21 @@ final class TimelineTest {
         }
     }
 
-    private static void assertRecipients(BiFunction<PatchedTimeline<ZonedDateTime, String>, Long, List<OnCall>> getRecipients,
+    private static void assertRecipients(BiFunction<Timeline<ZonedDateTime, String>, Long, List<OnCall>> getRecipients,
                                          List<Timeline<ZonedDateTime, String>> rotations,
                                          List<Interval<Instant, String>> overrides,
                                          Entry<Instant, List<OnCall>>... expecteds) {
-        PatchedTimeline<ZonedDateTime, String> snapshot = new PatchedTimeline<>(new UnionTimeline<>(rotations),
-                                                                                asList(StaticTimeline.of(map(overrides,
-                                                                                                             override -> {
-                                                                                                                 Range<Instant> range = override.getRange();
-                                                                                                                 return new Interval<>(
-                                                                                                                         dateRange(
-                                                                                                                                 range.getStartInclusive(),
-                                                                                                                                 range.getEndExclusive()),
-                                                                                                                         ignored -> asList(
-                                                                                                                                 override.getValue()));
-                                                                                                             }))));
+        Timeline<ZonedDateTime, String> snapshot = new PatchedTimeline<>(new UnionTimeline<>(rotations),
+                                                                         asList(StaticTimeline.of(map(overrides,
+                                                                                                      override -> {
+                                                                                                          Range<Instant> range = override.getRange();
+                                                                                                          return new Interval<>(
+                                                                                                                  dateRange(
+                                                                                                                          range.getStartInclusive(),
+                                                                                                                          range.getEndExclusive()),
+                                                                                                                  ignored -> asList(
+                                                                                                                          override.getValue()));
+                                                                                                      }))));
 
         // execute the method
         List<Entry<Instant, List<OnCall>>> actuals = new ArrayList<>();
@@ -425,18 +425,15 @@ final class TimelineTest {
         assertEquals(format(asList(expecteds)), format(actuals));
     }
 
-    private static List<OnCall> getRecipientsWithInterval(PatchedTimeline<ZonedDateTime, String> rotations,
-                                                          long millis) {
+    private static List<OnCall> getRecipientsWithInterval(Timeline<ZonedDateTime, String> rotations, long millis) {
         ZonedDateTime                         dateTime         = instantToZonedDateTime(Instant.ofEpochMilli(millis));
         ZonedDateTime                         oneMonthBefore   = dateTime.minus(1, ChronoUnit.MONTHS);
         ZonedDateTime                         oneMonthAfter    = dateTime.plus(1, ChronoUnit.MONTHS);
         Range<ZonedDateTime>                  calculationRange = Range.of(oneMonthBefore, oneMonthAfter);
         StaticTimeline<ZonedDateTime, String> timeline         = rotations.toStaticTimeline(calculationRange);
         List<OnCall>                          oncalls          = new ArrayList<>();
-        if (timeline != null) {
-            addIfNotNull(oncalls, false, timeline.findCurrentInterval(dateTime));
-            addIfNotNull(oncalls, true, timeline.findNextInterval(dateTime));
-        }
+        addIfNotNull(oncalls, false, timeline.findCurrentInterval(dateTime));
+        addIfNotNull(oncalls, true, timeline.findNextInterval(dateTime));
         return oncalls;
     }
 

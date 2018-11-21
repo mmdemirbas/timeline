@@ -36,7 +36,6 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
 
     @Override
     public StaticTimeline<C, V> toStaticTimeline(Range<? extends C> calculationRange) {
-        // todo: write tests & javadocs
         C                        start = calculationRange.getStartInclusive();
         C                        end   = calculationRange.getEndExclusive();
         NavigableMap<C, List<V>> map   = new TreeMap<>(intervalMap.subMap(start, end));
@@ -96,7 +95,6 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
      * Returns values of the interval containing the specified {@code point}.
      */
     public List<V> findCurrentValues(C point) {
-        // todo: write tests & javadocs
         return findCurrentInterval(point).getValue();
     }
 
@@ -104,7 +102,6 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
      * Returns the interval containing the specified {@code point}.
      */
     public Interval<C, List<V>> findCurrentInterval(C point) {
-        // todo: write tests & javadocs
         return getValuesOrEmpty(intervalMap.floorEntry(point));
     }
 
@@ -112,7 +109,6 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
      * Returns the interval coming just after the interval containing the specified {@code point}.
      */
     public Interval<C, List<V>> findNextInterval(C point) {
-        // todo: write tests & javadocs
         return getValuesOrEmpty(intervalMap.higherEntry(point));
     }
 
@@ -131,6 +127,9 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
      * Represents an association between a {@link Range} and an arbitrary value.
      * <p>
      * This class is immutable if the generic types {@link C} and {@link V} is immutable.
+     *
+     * @param <C> type of the {@link Comparable} values used as time points
+     * @param <V> type of the value associated by the time range
      */
     @Value
     public static final class Interval<C extends Comparable<? super C>, V> {
