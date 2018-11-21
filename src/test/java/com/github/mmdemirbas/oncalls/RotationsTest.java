@@ -406,8 +406,8 @@ final class RotationsTest {
                                          Entry<Instant, List<OnCall>>... expecteds) {
         List<Interval<ZonedDateTime, UnaryOperator<List<String>>>> intervals = map(overrides, override -> {
             Range<Instant> range = override.getRange();
-            return Interval.of(range(range.getStartInclusive(), range.getEndExclusive()),
-                               ignored -> asList(override.getValue()));
+            return new Interval<>(range(range.getStartInclusive(), range.getEndExclusive()),
+                                  ignored -> asList(override.getValue()));
         });
         Rotations<ZonedDateTime, String> snapshot = rotations.isEmpty()
                                                     ? new Rotations<>(rotations,
@@ -492,7 +492,7 @@ final class RotationsTest {
     }
 
     private static Interval<Instant, String> overrideBetween(Instant startTime, Instant endTime, String name) {
-        return Interval.of(Range.of(startTime, endTime), name);
+        return new Interval<>(Range.of(startTime, endTime), name);
     }
 
     private static Range<Instant> restrictTo(Instant startTime, Instant endTime) {

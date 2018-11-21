@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 import static com.github.mmdemirbas.oncalls.Utils.reduce;
+import static java.util.Collections.emptyList;
 
 /**
  * @author Muhammed Demirbaş
@@ -19,10 +20,10 @@ public final class Rotation<C extends Comparable<? super C>, V> {
 
     // todo: should I write tests for Rotation even Rotations have tests?
 
-    public Timeline<C, V> toTimeline(Range<C> calculationRange) {
+    public Timeline<C, V> toTimeline(Range<? extends C> calculationRange) {
         Timeline<C, V> timeline;
         if (recipients.isEmpty()) {
-            timeline = Timeline.of();
+            timeline = Timeline.of(emptyList());
         } else {
             Timeline<C, Long> iterations = recurrence.toTimeline(calculationRange);
             timeline = iterations.mapWith(index -> recipients.get((int) (index % recipients.size())));

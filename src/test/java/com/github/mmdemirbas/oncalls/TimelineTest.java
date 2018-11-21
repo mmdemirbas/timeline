@@ -21,50 +21,51 @@ final class TimelineTest {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
-    void of_NoEvents() {
+    void buildIntervalMap_NoEvents() {
         assertIntervalMap(mapOf(), asList());
     }
 
     @Test
-    void of_SingleEvent_Empty() {
+    void buildIntervalMap_SingleEvent_Empty() {
         assertIntervalMap(mapOf(), asList(interval(1, 1, "a")));
     }
 
     @Test
-    void of_SingleEvent_NonEmpty() {
+    void buildIntervalMap_SingleEvent_NonEmpty() {
         assertIntervalMap(mapOf(pair(1, asList("a")), pair(3, asList())), asList(interval(1, 3, "a")));
     }
 
     @Test
-    void of_DisjointEvents() {
+    void buildIntervalMap_DisjointEvents() {
         assertIntervalMap(mapOf(pair(1, asList("a")), pair(3, asList()), pair(5, asList("b")), pair(7, asList())),
                           asList(interval(1, 3, "a"), interval(5, 7, "b")));
     }
 
     @Test
-    void of_SuccessiveEvents() {
+    void buildIntervalMap_SuccessiveEvents() {
         assertIntervalMap(mapOf(pair(1, asList("a")), pair(3, asList("b")), pair(5, asList())),
                           asList(interval(1, 3, "a"), interval(3, 5, "b")));
     }
 
     @Test
-    void of_IntersectingEvents() {
+    void buildIntervalMap_IntersectingEvents() {
         assertIntervalMap(mapOf(pair(1, asList("a")),
-                                pair(3, asList("a", "b")), pair(5, asList("b")), pair(7, asList())),
-                          asList(interval(1, 5, "a"), interval(3, 7, "b")));
+                                pair(3, asList("a", "b")),
+                                pair(5, asList("b")),
+                                pair(7, asList())), asList(interval(1, 5, "a"), interval(3, 7, "b")));
     }
 
     @Test
-    void of_OverlappingEvents() {
+    void buildIntervalMap_OverlappingEvents() {
         assertIntervalMap(mapOf(pair(1, asList("a")),
-                                pair(3, asList("a", "b")), pair(5, asList("a")), pair(7, asList())),
-                          asList(interval(1, 7, "a"), interval(3, 5, "b")));
+                                pair(3, asList("a", "b")),
+                                pair(5, asList("a")),
+                                pair(7, asList())), asList(interval(1, 7, "a"), interval(3, 5, "b")));
     }
 
     private static void assertIntervalMap(Map<Integer, List<String>> expected,
                                           Collection<Interval<Integer, String>> intervals) {
-        Timeline<Integer, String> timeline = Timeline.of(intervals);
-        assertEquals(expected, timeline.getIntervalMap());
+        assertEquals(expected, Timeline.buildIntervalMap(intervals));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +73,6 @@ final class TimelineTest {
     private static <C extends Comparable<? super C>, V> Interval<C, V> interval(C startInclusive,
                                                                                 C endExclusive,
                                                                                 V value) {
-        return Interval.of(Range.of(startInclusive, endExclusive), value);
+        return new Interval<>(Range.of(startInclusive, endExclusive), value);
     }
 }

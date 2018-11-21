@@ -5,18 +5,22 @@ import lombok.Value;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import static com.github.mmdemirbas.oncalls.Utils.maxOf;
 import static com.github.mmdemirbas.oncalls.Utils.minOf;
 import static com.github.mmdemirbas.oncalls.Utils.sortedBy;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Represents a range between two {@link Comparable} types.
  * <p>
  * Start point is inclusive, and end point is exclusive as in the mathematical notation {@code  [20,80)}.
+ * <p>
+ * It is considered an empty range, if start and end points equal to each other.
+ * <p>
+ * Attempt to create a range with an end value smaller than the start value results with an exception.
  * <p>
  * This class is immutable if the generic type {@link C} is immutable.
  *
@@ -38,16 +42,14 @@ public final class Range<C extends Comparable<? super C>> {
     }
 
     private Range(C startInclusive, C endExclusive) {
-        Objects.requireNonNull(startInclusive, "startInclusive");
-        Objects.requireNonNull(endExclusive, "endExclusive");
+        this.startInclusive = requireNonNull(startInclusive, "startInclusive");
+        this.endExclusive = requireNonNull(endExclusive, "endExclusive");
+
         if (startInclusive.compareTo(endExclusive) > 0) {
             throw new IllegalArgumentException(String.format("must be start <= end, but was: %s > %s",
                                                              startInclusive,
                                                              endExclusive));
         }
-
-        this.startInclusive = startInclusive;
-        this.endExclusive = endExclusive;
     }
 
     /**
@@ -58,7 +60,7 @@ public final class Range<C extends Comparable<? super C>> {
     }
 
     /**
-     * Returns intersection of {@code this} range and the {@code other} range.
+     * Returns intersection of this range with the given range.
      */
     public Range<C> intersect(Range<? extends C> other) {
         C start  = maxOf(startInclusive, other.startInclusive);
@@ -92,9 +94,7 @@ public final class Range<C extends Comparable<? super C>> {
         return unmodifiableList(disjointRanges);
     }
 
-    private static <C extends Comparable<? super C>> void addRange(Collection<? super Range<C>> output,
-                                                                   C start,
-                                                                   C end) {
+    private static <C extends Comparable<? super C>> void addRange(Collection<Range<C>> output, C start, C end) {
         if ((start != null) && (end != null)) {
             Range<C> range = of(start, end);
             if (!range.isEmpty()) {

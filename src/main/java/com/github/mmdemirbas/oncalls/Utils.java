@@ -14,6 +14,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
+
 /**
  * @author Muhammed Demirbaş
  * @since 2018-11-19 12:20
@@ -25,12 +27,12 @@ public final class Utils {
 
     // todo: move other common parts from comlex classes like Recurrence & Timeline
 
+    // todo: document type params
+
     @SafeVarargs
     public static <K, V> Map<K, V> mapOf(Entry<K, V>... entries) {
         Map<K, V> map = new LinkedHashMap<>();
-        for (Entry<K, V> entry : entries) {
-            map.put(entry.getKey(), entry.getValue());
-        }
+        asList(entries).forEach(entry -> map.put(entry.getKey(), entry.getValue()));
         return map;
     }
 

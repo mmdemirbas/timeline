@@ -3,7 +3,6 @@ package com.github.mmdemirbas.oncalls;
 import lombok.Value;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -16,7 +15,6 @@ import java.util.function.UnaryOperator;
 import static com.github.mmdemirbas.oncalls.Utils.map;
 import static com.github.mmdemirbas.oncalls.Utils.reduce;
 import static com.github.mmdemirbas.oncalls.Utils.sorted;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableNavigableMap;
@@ -31,15 +29,9 @@ import static java.util.Collections.unmodifiableNavigableMap;
  */
 @Value
 public final class Timeline<C extends Comparable<? super C>, V> {
-    private static final Interval EMPTY_INTERVAL = Interval.of(null, emptyList());
-    // todo: document type params
+    private static final Interval EMPTY_INTERVAL = new Interval(null, emptyList());
 
     NavigableMap<C, List<V>> intervalMap;
-
-    @SafeVarargs
-    public static <C extends Comparable<? super C>, V> Timeline<C, V> of(Interval<C, V>... intervals) {
-        return of(asList(intervals));
-    }
 
     public static <C extends Comparable<? super C>, V> Timeline<C, V> of(Iterable<Interval<C, V>> intervals) {
         return new Timeline<>(buildIntervalMap(intervals));
@@ -52,7 +44,7 @@ public final class Timeline<C extends Comparable<? super C>, V> {
     /**
      * Builds an interval map which can be considered as another form of an "interval tree".
      */
-    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(Iterable<Interval<C, V>> intervals) {
+    public static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(Iterable<Interval<C, V>> intervals) {
         NavigableMap<C, List<V>> add           = indexBy(intervals, Range::getStartInclusive);
         NavigableMap<C, List<V>> remove        = indexBy(intervals, Range::getEndExclusive);
         NavigableMap<C, List<V>> intervalMap   = new TreeMap<>();
@@ -95,16 +87,14 @@ public final class Timeline<C extends Comparable<? super C>, V> {
     }
 
     private Interval<C, List<V>> getValuesOrEmpty(Entry<? extends C, ? extends List<V>> entry) {
-        if (entry == null) {
-            return EMPTY_INTERVAL;
+        if (entry != null) {
+            C key     = entry.getKey();
+            C nextKey = intervalMap.higherKey(key);
+            if (nextKey != null) {
+                return new Interval<>(Range.of(key, nextKey), entry.getValue());
+            }
         }
-        C key     = entry.getKey();
-        C nextKey = intervalMap.higherKey(key);
-        if (nextKey == null) {
-            return EMPTY_INTERVAL;
-        }
-        List<V> value = entry.getValue();
-        return Interval.of(Range.of(key, nextKey), value);
+        return EMPTY_INTERVAL;
     }
 
     public <U> Timeline<C, U> mapWith(Function<? super V, ? extends U> mapper) {
@@ -114,7 +104,7 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         return new Timeline<>(map);
     }
 
-    public Timeline<C, V> limitWith(Range<C> range) {
+    public Timeline<C, V> limitWith(Range<? extends C> range) {
         // todo: write tests & javadocs
         C                        start = range.getStartInclusive();
         C                        end   = range.getEndExclusive();
@@ -155,10 +145,9 @@ public final class Timeline<C extends Comparable<? super C>, V> {
                                                      (acc, patch) -> patch.apply(acc)));
     }
 
-    private <Y, Z> Timeline<C, Z> mergeWith(Timeline<C, Y> other,
-                                            BiFunction<? super List<? extends V>, ? super List<? extends Y>, ? extends List<? extends Z>> mergeFunction) {
-        List<Interval<C, Z>> intervals = new ArrayList<>();
-        List<? extends Z>    values    = emptyList();
+    private <A, U> Timeline<C, U> mergeWith(Timeline<C, A> other, BiFunction<List<V>, List<A>, List<U>> mergeFunction) {
+        List<Interval<C, U>> intervals = new ArrayList<>();
+        List<U>              values    = emptyList();
         C                    start     = null;
         C                    end       = null;
 
@@ -166,8 +155,8 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         for (C keyPoint : keyPointsSorted) {
             end = keyPoint;
             Interval<C, List<V>> xInterval    = findCurrentInterval(keyPoint);
-            Interval<C, List<Y>> yInterval    = other.findCurrentInterval(keyPoint);
-            List<? extends Z>    mergedValues = mergeFunction.apply(xInterval.getValue(), yInterval.getValue());
+            Interval<C, List<A>> yInterval    = other.findCurrentInterval(keyPoint);
+            List<U>              mergedValues = mergeFunction.apply(xInterval.getValue(), yInterval.getValue());
 
             if (!values.equals(mergedValues)) {
                 addIntervals(intervals, values, start, end);
@@ -180,13 +169,10 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         return of(intervals);
     }
 
-    private static <C extends Comparable<? super C>, U> void addIntervals(List<? super Interval<C, U>> output,
-                                                                          Collection<? extends U> values,
-                                                                          C start,
-                                                                          C end) {
+    private <U> void addIntervals(List<Interval<C, U>> output, List<U> values, C start, C end) {
         if (!values.isEmpty()) {
             Range<C> range = Range.of(start, end);
-            values.forEach(value -> output.add(Interval.of(range, value)));
+            values.forEach(value -> output.add(new Interval<>(range, value)));
         }
     }
 
@@ -194,22 +180,10 @@ public final class Timeline<C extends Comparable<? super C>, V> {
      * Represents an association between a {@link Range} and an arbitrary value.
      * <p>
      * This class is immutable if the generic types {@link C} and {@link V} is immutable.
-     *
-     * @author Muhammed Demirbaş
-     * @since 2018-11-18 09:54
      */
     @Value
     public static final class Interval<C extends Comparable<? super C>, V> {
         Range<C> range;
         V        value;
-
-        public static <C extends Comparable<? super C>, V> Interval<C, V> of(Range<C> range, V value) {
-            return new Interval<>(range, value);
-        }
-
-        private Interval(Range<C> range, V value) {
-            this.range = range;
-            this.value = value;
-        }
     }
 }

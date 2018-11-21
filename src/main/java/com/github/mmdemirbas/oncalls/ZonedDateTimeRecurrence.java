@@ -40,7 +40,7 @@ public final class ZonedDateTimeRecurrence implements Recurrence<ZonedDateTime> 
     }
 
     @Override
-    public Timeline<ZonedDateTime, Long> toTimeline(Range<ZonedDateTime> calculationRange) {
+    public Timeline<ZonedDateTime, Long> toTimeline(Range<? extends ZonedDateTime> calculationRange) {
         Range<ZonedDateTime> effectiveRange = recurrenceRange.intersect(calculationRange);
         long                 startIndex     = iterationIndexAt(effectiveRange.getStartInclusive());
         long                 endIndex       = iterationIndexAt(effectiveRange.getEndExclusive());
@@ -49,15 +49,11 @@ public final class ZonedDateTimeRecurrence implements Recurrence<ZonedDateTime> 
         List<Interval<ZonedDateTime, Long>> intervals = new ArrayList<>();
         for (long index = startIndex; index <= endIndex; index++) {
             for (Range<Instant> range : disjointRanges) {
-                intervals.add(Interval.of(sum(range, offset).intersect(effectiveRange), index));
+                intervals.add(new Interval<>(sum(range, offset).intersect(effectiveRange), index));
             }
             offset = offset.plus(iterationDuration);
         }
         return Timeline.of(intervals);
-    }
-
-    private static Instant durationToInstant(Duration duration) {
-        return Instant.ofEpochSecond(0L, duration.toNanos());
     }
 
     private long iterationIndexAt(ZonedDateTime point) {
@@ -75,6 +71,10 @@ public final class ZonedDateTimeRecurrence implements Recurrence<ZonedDateTime> 
 
     private static ZonedDateTime sum(ZonedDateTime zonedDateTime, Instant instant) {
         return zonedDateTime.plus(instantToNanos(instant), ChronoUnit.NANOS);
+    }
+
+    private static Instant durationToInstant(Duration duration) {
+        return Instant.ofEpochSecond(0L, duration.toNanos());
     }
 
     private static long instantToNanos(Instant instant) {
