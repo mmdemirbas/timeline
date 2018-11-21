@@ -1,6 +1,6 @@
 package com.github.mmdemirbas.oncalls;
 
-import lombok.Getter;
+import lombok.Value;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -12,19 +12,11 @@ import static com.github.mmdemirbas.oncalls.Utils.reduce;
  * @author Muhammed Demirbaş
  * @since 2018-11-19 17:51
  */
+@Value
 public final class Rotation<V> {
-    // todo: decide whether these fields should have getters or not!
-    @Getter private final Recurrence                                            recurrence; // todo: break need to getter and remove it
-    @Getter private final List<V>                                               recipients; // todo: break need to getter and remove it & ensure this is immutable
-    private final         List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> patches; // // todo: ensure this is immutable
-
-    public Rotation(Recurrence recurrence,
-                    List<V> recipients,
-                    List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> patches) {
-        this.recurrence = recurrence;
-        this.recipients = recipients;
-        this.patches = patches;
-    }
+    Recurrence                                            recurrence;
+    List<V>                                               recipients; // todo:ensure this is immutable
+    List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> patches; // // todo: ensure this is immutable
 
     // todo: should I write tests for Rotation even Rotations have tests?
 

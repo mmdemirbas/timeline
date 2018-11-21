@@ -1,8 +1,6 @@
 package com.github.mmdemirbas.oncalls;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Value;
 
 import java.util.Objects;
 
@@ -19,11 +17,10 @@ import static com.github.mmdemirbas.oncalls.Utils.minOf;
  * @author Muhammed Demirbaş
  * @since 2018-11-17 11:55
  */
-@ToString
-@EqualsAndHashCode
+@Value
 public final class Range<C extends Comparable<? super C>> {
-    @Getter private final C startInclusive;
-    @Getter private final C endExclusive;
+    private final C startInclusive;
+    private final C endExclusive;
 
     /**
      * Creates a Range from the given start and end points.

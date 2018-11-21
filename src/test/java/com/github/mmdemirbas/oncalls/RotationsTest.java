@@ -32,6 +32,7 @@ final class RotationsTest {
     private static final OnCall[] NO_ONCALL = new OnCall[0];
     private static final Duration HOURLY    = Duration.ofHours(1);
     private static final Duration DAILY     = Duration.ofDays(1);
+    public static final  Instant  ZERO      = Instant.EPOCH;
 
     @Test
     void infiniteRotation_FullTest() {
@@ -453,8 +454,8 @@ final class RotationsTest {
                     ZonedDateTime        startInclusive = range.getStartInclusive();
                     ZonedDateTime        endExclusive   = range.getEndExclusive();
                     oncalls.add(new OnCall(value,
-                                           !nextOnCall ? Instant.EPOCH : startInclusive.toInstant(),
-                                           nextOnCall ? Instant.EPOCH : endExclusive.toInstant(),
+                                           !nextOnCall ? ZERO : startInclusive.toInstant(),
+                                           nextOnCall ? ZERO : endExclusive.toInstant(),
                                            nextOnCall));
                 });
     }
@@ -481,7 +482,7 @@ final class RotationsTest {
                                                 Duration rotationPeriod,
                                                 List<Range<Instant>> restrictions,
                                                 String... recipients) {
-        return new Rotation<>(new Recurrence(range(Instant.EPOCH, endTime), rotationPeriod, restrictions),
+        return new Rotation<>(new Recurrence(range(ZERO, endTime), rotationPeriod, restrictions),
                               asList(recipients),
                               asList());
     }
@@ -495,11 +496,11 @@ final class RotationsTest {
     }
 
     private static OnCall onCallUntil(Instant endTime, String name) {
-        return new OnCall(name, Instant.EPOCH, endTime, false);
+        return new OnCall(name, ZERO, endTime, false);
     }
 
     private static OnCall nextOnCallFrom(Instant startTime, String name) {
-        return new OnCall(name, startTime, Instant.EPOCH, true);
+        return new OnCall(name, startTime, ZERO, true);
     }
 
     private static String format(Collection<Entry<Instant, List<OnCall>>> items) {

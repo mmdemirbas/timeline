@@ -1,6 +1,6 @@
 package com.github.mmdemirbas.oncalls;
 
-import lombok.Getter;
+import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,24 +29,24 @@ import static java.util.Collections.unmodifiableNavigableMap;
  * @author Muhammed Demirbaş
  * @since 2018-11-18 09:55
  */
+@Value
 public final class Timeline<C extends Comparable<? super C>, V> {
     private static final Interval EMPTY_INTERVAL = Interval.of(null, emptyList());
+    // todo: document type params
 
-    private final transient List<Interval<C, V>>     intervals; // todo: break need to interval list & remove it
-    @Getter private final   NavigableMap<C, List<V>> intervalMap;
+    NavigableMap<C, List<V>> intervalMap;
 
     @SafeVarargs
     public static <C extends Comparable<? super C>, V> Timeline<C, V> of(Interval<C, V>... intervals) {
-        return new Timeline<>(asList(intervals));
+        return of(asList(intervals));
     }
 
-    public static <C extends Comparable<? super C>, V> Timeline<C, V> of(Collection<Interval<C, V>> intervals) {
-        return new Timeline<>(intervals);
+    public static <C extends Comparable<? super C>, V> Timeline<C, V> of(Iterable<Interval<C, V>> intervals) {
+        return new Timeline<>(buildIntervalMap(intervals));
     }
 
-    private Timeline(Collection<Interval<C, V>> intervals) {
-        this.intervals = unmodifiableList(new ArrayList<>(intervals));
-        intervalMap = buildIntervalMap(intervals);
+    private Timeline(NavigableMap<C, List<V>> intervalMap) {
+        this.intervalMap = intervalMap;
     }
 
     /**
@@ -109,23 +109,37 @@ public final class Timeline<C extends Comparable<? super C>, V> {
 
     public <U> Timeline<C, U> mapWith(Function<? super V, ? extends U> mapper) {
         // todo: write tests & javadocs
-        // todo: implement using intervalMap (should be faster)
-        return with(interval -> Interval.of(interval.getRange(), mapper.apply(interval.getValue())));
+        NavigableMap<C, List<U>> map = new TreeMap<>();
+        intervalMap.forEach((key, values) -> map.put(key, map(values, mapper)));
+        return new Timeline<>(map);
     }
 
-    public Timeline<C, V> limitWith(Range<C> calculationRange) {
+    public Timeline<C, V> limitWith(Range<C> range) {
         // todo: write tests & javadocs
-        // todo: implement using intervalMap (should be faster)
-        return with(interval -> Interval.of(calculationRange.intersect(interval.getRange()), interval.getValue()));
+        C                        start = range.getStartInclusive();
+        C                        end   = range.getEndExclusive();
+        NavigableMap<C, List<V>> map   = new TreeMap<>(intervalMap.subMap(start, end));
+
+        List<V> startValue = valueOrEmpty(intervalMap.floorEntry(start));
+        if (!startValue.isEmpty()) {
+            map.put(start, startValue);
+        }
+
+        List<V> endValue = valueOrEmpty(intervalMap.lowerEntry(end));
+        if (!endValue.isEmpty()) {
+            map.put(end, emptyList());
+        }
+
+        return new Timeline<>(map);
     }
 
-    private <U> Timeline<C, U> with(Function<Interval<C, V>, Interval<C, U>> mapper) {
-        return new Timeline<>(map(intervals, mapper));
+    private static <K, V> List<V> valueOrEmpty(Entry<K, List<V>> entry) {
+        return (entry == null) ? emptyList() : entry.getValue();
     }
 
     public Timeline<C, V> mergeWith(Timeline<C, ? extends V> other) {
         // todo: write tests & javadocs
-        return merge(this, other, (values, otherValues) -> {
+        return mergeWith(other, (values, otherValues) -> {
             List<V> result = new ArrayList<>();
             result.addAll(values);
             result.addAll(otherValues);
@@ -135,26 +149,24 @@ public final class Timeline<C extends Comparable<? super C>, V> {
 
     public Timeline<C, V> patchWith(Timeline<C, ? extends UnaryOperator<List<V>>> patchTimeline) {
         // todo: write tests & javadocs
-        return merge(this,
-                     patchTimeline,
-                     (values, patches) -> reduce((List<V>) new ArrayList<>(values),
-                                                 patches,
-                                                 (acc, patch) -> patch.apply(acc)));
+        return mergeWith(patchTimeline,
+                         (values, patches) -> reduce((List<V>) new ArrayList<>(values),
+                                                     patches,
+                                                     (acc, patch) -> patch.apply(acc)));
     }
 
-    private static <C extends Comparable<? super C>, X, Y, Z> Timeline<C, Z> merge(Timeline<C, X> x,
-                                                                                   Timeline<C, Y> y,
-                                                                                   BiFunction<? super List<? extends X>, ? super List<? extends Y>, ? extends List<? extends Z>> mergeFunction) {
+    private <Y, Z> Timeline<C, Z> mergeWith(Timeline<C, Y> other,
+                                            BiFunction<? super List<? extends V>, ? super List<? extends Y>, ? extends List<? extends Z>> mergeFunction) {
         List<Interval<C, Z>> intervals = new ArrayList<>();
         List<? extends Z>    values    = emptyList();
         C                    start     = null;
         C                    end       = null;
 
-        Set<C> keyPointsSorted = sorted(x.intervalMap.keySet(), y.intervalMap.keySet());
+        Set<C> keyPointsSorted = sorted(intervalMap.keySet(), other.intervalMap.keySet());
         for (C keyPoint : keyPointsSorted) {
             end = keyPoint;
-            Interval<C, List<X>> xInterval    = x.findCurrentInterval(keyPoint);
-            Interval<C, List<Y>> yInterval    = y.findCurrentInterval(keyPoint);
+            Interval<C, List<V>> xInterval    = findCurrentInterval(keyPoint);
+            Interval<C, List<Y>> yInterval    = other.findCurrentInterval(keyPoint);
             List<? extends Z>    mergedValues = mergeFunction.apply(xInterval.getValue(), yInterval.getValue());
 
             if (!values.equals(mergedValues)) {
@@ -165,7 +177,7 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         }
 
         addIntervals(intervals, values, start, end);
-        return new Timeline<>(intervals);
+        return of(intervals);
     }
 
     private static <C extends Comparable<? super C>, U> void addIntervals(List<? super Interval<C, U>> output,
@@ -186,9 +198,10 @@ public final class Timeline<C extends Comparable<? super C>, V> {
      * @author Muhammed Demirbaş
      * @since 2018-11-18 09:54
      */
+    @Value
     public static final class Interval<C extends Comparable<? super C>, V> {
-        @Getter private final Range<C> range;
-        @Getter private final V        value;
+        Range<C> range;
+        V        value;
 
         public static <C extends Comparable<? super C>, V> Interval<C, V> of(Range<C> range, V value) {
             return new Interval<>(range, value);

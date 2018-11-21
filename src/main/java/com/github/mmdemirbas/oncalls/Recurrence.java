@@ -1,6 +1,7 @@
 package com.github.mmdemirbas.oncalls;
 
 import com.github.mmdemirbas.oncalls.Timeline.Interval;
+import lombok.Value;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -23,10 +24,11 @@ import static java.util.Collections.unmodifiableList;
  * @author Muhammed Demirbaş
  * @since 2018-11-19 14:48
  */
+@Value
 public final class Recurrence {
-    private final Range<ZonedDateTime> recurrenceRange;
-    private final Duration             iterationDuration;
-    private final List<Range<Instant>> disjointRanges;
+    Range<ZonedDateTime> recurrenceRange;
+    Duration             iterationDuration;
+    List<Range<Instant>> disjointRanges;
 
     public Recurrence(Range<ZonedDateTime> recurrenceRange,
                       Duration iterationDuration,
@@ -49,7 +51,7 @@ public final class Recurrence {
      * Returns a set of disjoint ranges by joining intersecting, overlapping and successive ranges.
      * Empty ranges will not appear in the result set.
      */
-    static <C extends Comparable<? super C>> List<Range<C>> toDisjointRanges(Collection<Range<C>> ranges) {
+    public static <C extends Comparable<? super C>> List<Range<C>> toDisjointRanges(Collection<Range<C>> ranges) {
         List<Range<C>> disjointRanges = new ArrayList<>();
         C              start          = null;
         C              end            = null;
@@ -99,8 +101,8 @@ public final class Recurrence {
     }
 
     private long iterationIndexAt(ZonedDateTime point) {
-        return Duration.between(getRecurrenceStart(), point)
-                       .toNanos() / iterationDuration.toNanos();
+        Duration elapsedDuration = Duration.between(getRecurrenceStart(), point);
+        return elapsedDuration.toNanos() / iterationDuration.toNanos();
     }
 
     private ZonedDateTime getRecurrenceStart() {

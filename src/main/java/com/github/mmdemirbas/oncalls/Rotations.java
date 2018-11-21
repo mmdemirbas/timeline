@@ -1,5 +1,7 @@
 package com.github.mmdemirbas.oncalls;
 
+import lombok.Value;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -10,14 +12,10 @@ import static com.github.mmdemirbas.oncalls.Utils.reduce;
  * @author Muhammed Demirbaş
  * @since 2018-11-19 17:50
  */
+@Value
 public final class Rotations<V> {
-    private final List<Rotation<V>>                                     rotations; // todo: ensure this is immutable
-    private final List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> globalPatches; // todo: ensure this is immutable
-
-    public Rotations(List<Rotation<V>> rotations, List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> globalPatches) {
-        this.rotations = rotations;
-        this.globalPatches = globalPatches;
-    }
+    List<Rotation<V>>                                     rotations; // todo: ensure this is immutable
+    List<Timeline<ZonedDateTime, UnaryOperator<List<V>>>> globalPatches; // todo: ensure this is immutable
 
     public Timeline<ZonedDateTime, V> toTimeline(Range<ZonedDateTime> calculationRange) {
         Timeline<ZonedDateTime, V> timeline = Timeline.of();
