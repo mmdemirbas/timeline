@@ -41,3 +41,10 @@ in any part of the Timeline.
 
 `Rotations` is basically a list of `Rotation`s, plus patch support
 on top of that.
+
+
+## TODO
+
+- Write more granular unit tests
+- Complete missing javadocs
+- Improve API by eliminating null usages as much as possible
