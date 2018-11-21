@@ -1,17 +1,23 @@
-# oncalls
+# timeline
 
-Tiny Java library to calculate on-call rotations.
+Tiny Java library to calculate on-call timelines.
 
 Written in pure Java using zero runtime dependency.
+
+![](doc/timeline1.png)
+
+![](doc/timeline2.png)
+
+![](doc/timeline3.png)
 
 
 ## Dependencies
 
-| Dependency Scope    | Dependencies  |
-| ------------------- | ------------- |
-| Runtime             | only jdk-8    |
-| Compile (provided)  | Lombok        |
-| Test                | Junit5        |
+| Dependency Scope    | Dependencies    |
+| ------------------- | --------------- |
+| runtime             | (only jdk-8)    |
+| compile (provided)  | lombok          |
+| test                | junit5          |
 
 
 ## Design
@@ -47,5 +53,4 @@ implementation hard-codes the time point type as `ZonedDateTime`.
 ## TODO
 
 - Write more granular unit tests
-- Complete missing javadocs
-- Improve API by eliminating null usages as much as possible
+- Make a release
