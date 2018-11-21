@@ -406,7 +406,7 @@ final class RotationsTest {
                                          Entry<Instant, List<OnCall>>... expecteds) {
         List<Interval<ZonedDateTime, UnaryOperator<List<String>>>> intervals = map(overrides, override -> {
             Range<Instant> range = override.getRange();
-            return new Interval<>(range(range.getStartInclusive(), range.getEndExclusive()),
+            return new Interval<>(dateRange(range.getStartInclusive(), range.getEndExclusive()),
                                   ignored -> asList(override.getValue()));
         });
         Rotations<ZonedDateTime, String> snapshot = rotations.isEmpty()
@@ -486,7 +486,7 @@ final class RotationsTest {
                                                                Duration rotationPeriod,
                                                                List<Range<Instant>> restrictions,
                                                                String... recipients) {
-        return new Rotation<>(new ZonedDateTimeRecurrence(range(ZERO, endTime), rotationPeriod, restrictions),
+        return new Rotation<>(new ZonedDateTimeRecurrence(dateRange(ZERO, endTime), rotationPeriod, restrictions),
                               asList(recipients),
                               asList());
     }
@@ -544,7 +544,7 @@ final class RotationsTest {
         return Instant.ofEpochMilli(TimeUnit.HOURS.toMillis(hour));
     }
 
-    private static Range<ZonedDateTime> range(Instant startTime, Instant endTime) {
+    private static Range<ZonedDateTime> dateRange(Instant startTime, Instant endTime) {
         return Range.of(instantToZonedDateTime(startTime), instantToZonedDateTime(endTime));
     }
 

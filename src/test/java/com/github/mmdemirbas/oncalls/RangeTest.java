@@ -34,7 +34,7 @@ final class RangeTest {
 
     @Test
     void of_NullEnd() {
-        assertThrows(NullPointerException.class, () -> Range.of(null, 1));
+        assertThrows(NullPointerException.class, () -> Range.of(1, null));
     }
 
     @Test
@@ -110,6 +110,11 @@ final class RangeTest {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    void toDisjointRanges_NullInput() {
+        assertDisjointRanges(asList(), null);
+    }
 
     @Test
     void toDisjointRanges_NoRange() {

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -151,11 +150,10 @@ public final class Timeline<C extends Comparable<? super C>, V> {
         C                    start     = null;
         C                    end       = null;
 
-        Set<C> keyPointsSorted = sorted(intervalMap.keySet(), other.intervalMap.keySet());
-        for (C keyPoint : keyPointsSorted) {
-            end = keyPoint;
-            Interval<C, List<V>> xInterval    = findCurrentInterval(keyPoint);
-            Interval<C, List<A>> yInterval    = other.findCurrentInterval(keyPoint);
+        for (C point : sorted(intervalMap.keySet(), other.intervalMap.keySet())) {
+            end = point;
+            Interval<C, List<V>> xInterval    = findCurrentInterval(point);
+            Interval<C, List<A>> yInterval    = other.findCurrentInterval(point);
             List<U>              mergedValues = mergeFunction.apply(xInterval.getValue(), yInterval.getValue());
 
             if (!values.equals(mergedValues)) {

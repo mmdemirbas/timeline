@@ -33,10 +33,10 @@ public final class ZonedDateTimeRecurrence implements Recurrence<ZonedDateTime> 
         this.iterationDuration = iterationDuration;
         // todo: write test to show that empty subranges handled
         // todo: write javadoc to explain that empty subranges handled
-        disjointRanges = Range.toDisjointRanges(((subRanges != null) && !subRanges.isEmpty())
-                                                ? subRanges
-                                                : singletonList(Range.of(Instant.EPOCH,
-                                                                         durationToInstant(iterationDuration))));
+        List<Range<Instant>> disjointRanges = Range.toDisjointRanges(subRanges);
+        this.disjointRanges = !disjointRanges.isEmpty()
+                              ? disjointRanges
+                              : singletonList(Range.of(Instant.EPOCH, durationToInstant(iterationDuration)));
     }
 
     @Override
@@ -49,7 +49,9 @@ public final class ZonedDateTimeRecurrence implements Recurrence<ZonedDateTime> 
         List<Interval<ZonedDateTime, Long>> intervals = new ArrayList<>();
         for (long index = startIndex; index <= endIndex; index++) {
             for (Range<Instant> range : disjointRanges) {
-                intervals.add(new Interval<>(sum(range, offset).intersect(effectiveRange), index));
+                intervals.add(new Interval<>(Range.of(sum(offset, range.getStartInclusive()),
+                                                      sum(offset, range.getEndExclusive()))
+                                                  .intersect(effectiveRange), index));
             }
             offset = offset.plus(iterationDuration);
         }
@@ -65,19 +67,12 @@ public final class ZonedDateTimeRecurrence implements Recurrence<ZonedDateTime> 
         return recurrenceRange.getStartInclusive();
     }
 
-    private static Range<ZonedDateTime> sum(Range<Instant> range, ZonedDateTime offset) {
-        return Range.of(sum(offset, range.getStartInclusive()), sum(offset, range.getEndExclusive()));
-    }
-
     private static ZonedDateTime sum(ZonedDateTime zonedDateTime, Instant instant) {
-        return zonedDateTime.plus(instantToNanos(instant), ChronoUnit.NANOS);
+        long nanos = TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
+        return zonedDateTime.plus(nanos, ChronoUnit.NANOS);
     }
 
     private static Instant durationToInstant(Duration duration) {
         return Instant.ofEpochSecond(0L, duration.toNanos());
-    }
-
-    private static long instantToNanos(Instant instant) {
-        return TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
     }
 }

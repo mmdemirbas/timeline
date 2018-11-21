@@ -10,6 +10,7 @@ import java.util.Set;
 import static com.github.mmdemirbas.oncalls.Utils.maxOf;
 import static com.github.mmdemirbas.oncalls.Utils.minOf;
 import static com.github.mmdemirbas.oncalls.Utils.sortedBy;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 
@@ -76,6 +77,10 @@ public final class Range<C extends Comparable<? super C>> {
      * Empty ranges will not appear in the result set.
      */
     public static <C extends Comparable<? super C>> List<Range<C>> toDisjointRanges(Collection<Range<C>> ranges) {
+        if ((ranges == null) || ranges.isEmpty()) {
+            return emptyList();
+        }
+
         List<Range<C>> disjointRanges = new ArrayList<>();
         C              start          = null;
         C              end            = null;
