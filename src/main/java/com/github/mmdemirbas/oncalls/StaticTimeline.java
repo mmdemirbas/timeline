@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static com.github.mmdemirbas.oncalls.Utils.reduce;
 import static com.github.mmdemirbas.oncalls.Utils.sorted;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
@@ -59,36 +60,40 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
      * Creates a new {@link StaticTimeline} combining this timeline with the given timeline using
      * the provided {@code mergeFunction}.
      *
-     * @param other         other timeline to combine
-     * @param mergeFunction function to use to decide final values for an interval
-     * @param <A>           type of the values of the other timeline
-     * @param <U>           type of the values of the returning timeline
+     * @param timelines        other timelines to combine
+     * @param calculationRange range to calculate combination
+     * @param fn               merge function to use to decide final values for an interval
+     * @param <A>              type of the values of the other timelines
      */
-    public <A, U> StaticTimeline<C, U> combine(StaticTimeline<C, A> other,
-                                               BiFunction<List<V>, List<A>, List<U>> mergeFunction) {
-        List<Interval<C, U>> intervals = new ArrayList<>();
-        List<U>              values    = emptyList();
-        C                    start     = null;
-        C                    end       = null;
+    public <A> StaticTimeline<C, V> combine(Iterable<? extends Timeline<C, A>> timelines,
+                                            Range<? extends C> calculationRange,
+                                            BiFunction<List<V>, List<A>, List<V>> fn) {
+        return reduce(this, timelines, (result, timeline) -> {
+            StaticTimeline<C, A> restricted = timeline.toStaticTimeline(calculationRange);
+            List<Interval<C, V>> intervals  = new ArrayList<>();
+            List<V>              values     = emptyList();
+            C                    start      = null;
+            C                    end        = null;
 
-        for (C point : sorted(intervalMap.keySet(), other.intervalMap.keySet())) {
-            end = point;
-            List<U> mergedValues = mergeFunction.apply(findCurrentValues(point), other.findCurrentValues(point));
-            if (!values.equals(mergedValues)) {
-                if (!values.isEmpty()) {
-                    Range<C> range = Range.of(start, end);
-                    values.forEach(value -> intervals.add(new Interval<>(range, value)));
+            for (C point : sorted(result.intervalMap.keySet(), restricted.intervalMap.keySet())) {
+                end = point;
+                List<V> mergedValues = fn.apply(result.findCurrentValues(point), restricted.findCurrentValues(point));
+                if (!values.equals(mergedValues)) {
+                    if (!values.isEmpty()) {
+                        Range<C> range = Range.of(start, end);
+                        values.forEach(value -> intervals.add(new Interval<>(range, value)));
+                    }
+                    values = mergedValues;
+                    start = end;
                 }
-                values = mergedValues;
-                start = end;
             }
-        }
 
-        if (!values.isEmpty()) {
-            Range<C> range = Range.of(start, end);
-            values.forEach(value -> intervals.add(new Interval<>(range, value)));
-        }
-        return of(intervals);
+            if (!values.isEmpty()) {
+                Range<C> range = Range.of(start, end);
+                values.forEach(value -> intervals.add(new Interval<>(range, value)));
+            }
+            return of(intervals);
+        });
     }
 
     /**

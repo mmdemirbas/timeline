@@ -23,14 +23,11 @@ public final class PatchedTimeline<C extends Comparable<? super C>, V> implement
 
     @Override
     public StaticTimeline<C, V> toStaticTimeline(Range<? extends C> calculationRange) {
-        StaticTimeline<C, V> result = baseTimeline.toStaticTimeline(calculationRange);
-        result = reduce(result, patchTimelines, (accTimeline, patchTimeline) -> {
-            StaticTimeline<C, UnaryOperator<List<V>>> limited = patchTimeline.toStaticTimeline(calculationRange);
-            return accTimeline.combine(limited,
-                                       (values, patches) -> reduce((List<V>) new ArrayList<>(values),
-                                                                   patches,
-                                                                   (acc, patch) -> patch.apply(acc)));
-        });
-        return result;
+        return baseTimeline.toStaticTimeline(calculationRange)
+                           .combine(patchTimelines,
+                                    calculationRange,
+                                    (values, patches) -> reduce((List<V>) new ArrayList<>(values),
+                                                                patches,
+                                                                (acc, patch) -> patch.apply(acc)));
     }
 }

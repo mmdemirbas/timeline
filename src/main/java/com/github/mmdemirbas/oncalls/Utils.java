@@ -19,8 +19,6 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 
 public final class Utils {
-    // todo: put a visualization of timelines to README
-
     // todo: write tests for Utils
 
     // todo: write tests for StaticTimeline
@@ -78,7 +76,7 @@ public final class Utils {
         return (x.compareTo(y) < 0) ? x : y;
     }
 
-    public static <T> List<T> unmodifiableCopyOf(List<T> list) {
+    public static <T> List<T> unmodifiableCopyOf(List<? extends T> list) {
         return Collections.unmodifiableList(new ArrayList<>(list));
     }
 }

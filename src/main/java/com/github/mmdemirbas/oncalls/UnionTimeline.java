@@ -1,11 +1,14 @@
 package com.github.mmdemirbas.oncalls;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.github.mmdemirbas.oncalls.StaticTimeline.Interval;
 
-import static com.github.mmdemirbas.oncalls.Utils.reduce;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static com.github.mmdemirbas.oncalls.Utils.unmodifiableCopyOf;
-import static java.util.Collections.emptyList;
 
 /**
  * A {@link Timeline} implementation which works as a union of multiple {@link Timeline}s.
@@ -21,16 +24,11 @@ public final class UnionTimeline<C extends Comparable<? super C>, V> implements 
 
     @Override
     public StaticTimeline<C, V> toStaticTimeline(Range<? extends C> calculationRange) {
-        StaticTimeline<C, V> result = StaticTimeline.of(emptyList());
-        result = reduce(result,
-                        timelines,
-                        (acc, timeline) -> acc.combine(timeline.toStaticTimeline(calculationRange),
-                                                       (thisValues, otherValues) -> {
-                                                           List<V> values = new ArrayList<>();
-                                                           values.addAll(thisValues);
-                                                           values.addAll(otherValues);
-                                                           return values;
-                                                       }));
-        return result;
+        return StaticTimeline.of(Collections.<Interval<C, V>>emptyList())
+                             .combine(timelines,
+                                      calculationRange,
+                                      (thisValues, otherValues) -> Stream.of(thisValues, otherValues)
+                                                                         .flatMap(Collection::stream)
+                                                                         .collect(Collectors.toList()));
     }
 }
