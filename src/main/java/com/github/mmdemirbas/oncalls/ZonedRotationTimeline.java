@@ -1,7 +1,5 @@
 package com.github.mmdemirbas.oncalls;
 
-import com.github.mmdemirbas.oncalls.StaticTimeline.Interval;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -63,7 +61,7 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
                 offset = offset.plus(iterationDuration);
             }
         }
-        return StaticTimeline.of(intervals);
+        return new StaticTimelineImp<>(intervals);
     }
 
     private long indexOfIterationAt(ZonedDateTime point) {

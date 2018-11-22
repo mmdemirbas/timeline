@@ -1,6 +1,5 @@
 package com.github.mmdemirbas.oncalls;
 
-import com.github.mmdemirbas.oncalls.StaticTimeline.Interval;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -17,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static com.github.mmdemirbas.oncalls.Utils.map;
 import static com.github.mmdemirbas.oncalls.Utils.pair;
@@ -400,16 +400,15 @@ final class TimelineTest {
                                          List<Interval<Instant, String>> overrides,
                                          Entry<Instant, List<OnCall>>... expecteds) {
         Timeline<ZonedDateTime, String> snapshot = new PatchedTimeline<>(new UnionTimeline<>(rotations),
-                                                                         asList(StaticTimeline.of(map(overrides,
-                                                                                                      override -> {
-                                                                                                          Range<Instant> range = override.getRange();
-                                                                                                          return new Interval<>(
-                                                                                                                  dateRange(
-                                                                                                                          range.getStartInclusive(),
-                                                                                                                          range.getEndExclusive()),
-                                                                                                                  ignored -> asList(
-                                                                                                                          override.getValue()));
-                                                                                                      }))));
+                                                                         asList(new StaticTimelineImp<ZonedDateTime, UnaryOperator<List<String>>>(
+                                                                                 map(overrides, override -> {
+                                                                                     Range<Instant> range = override.getRange();
+                                                                                     return new Interval<>(dateRange(
+                                                                                             range.getStartInclusive(),
+                                                                                             range.getEndExclusive()),
+                                                                                                           ignored -> asList(
+                                                                                                                   override.getValue()));
+                                                                                 }))));
 
         // execute the method
         List<Entry<Instant, List<OnCall>>> actuals = new ArrayList<>();

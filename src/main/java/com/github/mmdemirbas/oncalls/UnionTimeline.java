@@ -1,9 +1,6 @@
 package com.github.mmdemirbas.oncalls;
 
-import com.github.mmdemirbas.oncalls.StaticTimeline.Interval;
-
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,11 +21,13 @@ public final class UnionTimeline<C extends Comparable<? super C>, V> implements 
 
     @Override
     public StaticTimeline<C, V> toStaticTimeline(Range<? extends C> calculationRange) {
-        return StaticTimeline.of(Collections.<Interval<C, V>>emptyList())
-                             .combine(timelines,
-                                      calculationRange,
-                                      (thisValues, otherValues) -> Stream.of(thisValues, otherValues)
-                                                                         .flatMap(Collection::stream)
-                                                                         .collect(Collectors.toList()));
+        // todo: reduce without seed
+        return StaticTimelineImp.<C, V>emptyTimeline().toStaticTimeline(calculationRange)
+                                                      .combine(timelines,
+                                                               calculationRange,
+                                                               (thisValues, otherValues) -> Stream.of(thisValues,
+                                                                                                      otherValues)
+                                                                                                  .flatMap(Collection::stream)
+                                                                                                  .collect(Collectors.toList()));
     }
 }

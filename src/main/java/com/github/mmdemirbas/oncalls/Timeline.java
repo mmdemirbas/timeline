@@ -9,8 +9,7 @@ package com.github.mmdemirbas.oncalls;
 @FunctionalInterface
 public interface Timeline<C extends Comparable<? super C>, V> {
     /**
-     * Converts the specified {@code calculationRange} part of this {@link Timeline}
-     * into a {@link StaticTimeline}
+     * Converts the specified {@code calculationRange} part of this Timeline into a {@link StaticTimeline}
      */
     StaticTimeline<C, V> toStaticTimeline(Range<? extends C> calculationRange);
 }

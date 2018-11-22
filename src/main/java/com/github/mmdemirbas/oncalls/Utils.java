@@ -25,6 +25,12 @@ public final class Utils {
 
     // todo: release a major version when ready
 
+    // todo: give better names to Interval & Range
+
+    // todo: improve images -- split one-by-one, add tags to last 2
+
+    // todo: dependency matrix resmi de koy
+
     @SafeVarargs
     public static <K, V> Map<K, V> mapOf(Entry<K, V>... entries) {
         Map<K, V> map = new LinkedHashMap<>();

@@ -24,20 +24,24 @@ Written in pure Java using zero runtime dependency.
 
 ![](doc/uml.png)
 
-`Range` is a pair of `Comparable` values (start & end points).
-This is the simplest data structure in the library.
+`Range` is a pair of `Comparable` values used as start & end points.
 
-`Timeline` is the base interface. It has only one method.
+`Interval` is an association between a `Range` and an arbitrary value.
 
-`StaticTimeline` is a finite segment of `Comparable` values which allows
-to associate its arbitrary sub-segments (`Interval`s) with a list of
-arbitrary values. The implementation utilises `NavigableMap` as
-'interval map' (consider as another representation of 'interval tree').
-`StaticTimeline` is the most important and most complex data structure
-in the library. Actually, it has 150+ lines of code which is not
-so complex tough.
+`Timeline` is the base interface. It has only one method, namely
+`StaticTimeline toStaticTimeline(Range<C>)`
 
-`UnionTimeline` is a union of contained timelines, as the name suggests.
+`StaticTimeline` is an interface representing a finite segment of
+`Comparable` values and allowing to associate its arbitrary sub-segments
+(`Interval`s) with a list of arbitrary values.
+
+The `StaticTimelineImp` implementation utilises `NavigableMap` as
+'interval map' which can be considered as another representation of
+an 'interval tree'. This is the most crucial part of the library, since
+efficiency of all calculations depends it.
+
+`UnionTimeline` merges a collection of timelines into one,
+as the name suggests.
 
 `PatchedTimeline` is a timeline which adds patch support on top of a
 base timeline. Patch support is the ability to add, remove, or change
@@ -49,6 +53,9 @@ one-by-one . This is the only class mentioning `java.time` package.
 Unlike previous ones which leaves time point type `C` as generic, this
 implementation hard-codes the time point type as `ZonedDateTime`.
 
+So, we can say that the most important parts are;
+ - `StaticTimelineImp`
+ - and `ZonedRotationTimeline` classes.
 
 ## TODO
 
