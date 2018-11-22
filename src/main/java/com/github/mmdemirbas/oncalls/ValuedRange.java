@@ -22,7 +22,7 @@ import static java.util.Collections.unmodifiableNavigableMap;
  * @param <V> type of the value associated by the time range
  */
 @Value
-public final class Interval<C extends Comparable<? super C>, V> {
+public final class ValuedRange<C extends Comparable<? super C>, V> {
     private final Range<C> range;
     private final V        value;
 
@@ -31,7 +31,7 @@ public final class Interval<C extends Comparable<? super C>, V> {
     /**
      * Builds an interval map which can be considered as another form of an "interval tree".
      */
-    public static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(Iterable<? extends Interval<? extends C, ? extends V>> intervals) {
+    public static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(List<ValuedRange<C, V>> intervals) {
         NavigableMap<C, List<V>> add           = indexBy(intervals, Range::getStartInclusive);
         NavigableMap<C, List<V>> remove        = indexBy(intervals, Range::getEndExclusive);
         NavigableMap<C, List<V>> intervalMap   = new TreeMap<>();
@@ -45,11 +45,11 @@ public final class Interval<C extends Comparable<? super C>, V> {
         return unmodifiableNavigableMap(intervalMap);
     }
 
-    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> indexBy(Iterable<? extends Interval<? extends C, ? extends V>> intervals,
-                                                                                         Function<? super Range<? extends C>, ? extends C> fn) {
+    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> indexBy(Iterable<ValuedRange<C, V>> intervals,
+                                                                                         Function<? super Range<C>, C> fn) {
         NavigableMap<C, List<V>> index = new TreeMap<>();
         intervals.forEach(interval -> {
-            Range<? extends C> range = interval.getRange();
+            Range<C> range = interval.getRange();
             if (!range.isEmpty()) {
                 C       key    = fn.apply(range);
                 List<V> values = index.computeIfAbsent(key, x -> new ArrayList<>());

@@ -396,13 +396,13 @@ final class TimelineTest {
 
     private static void assertRecipients(BiFunction<Timeline<ZonedDateTime, String>, Long, List<OnCall>> getRecipients,
                                          List<Timeline<ZonedDateTime, String>> rotations,
-                                         List<Interval<Instant, String>> overrides,
+                                         List<ValuedRange<Instant, String>> overrides,
                                          Entry<Instant, List<OnCall>>... expecteds) {
         Timeline<ZonedDateTime, String> snapshot = new PatchedTimeline<>(new UnionTimeline<>(rotations),
                                                                          asList(StaticTimeline.ofIntervals(map(overrides,
                                                                                                                override -> {
                                                                                                                    Range<Instant> range = override.getRange();
-                                                                                                                   return new Interval<>(
+                                                                                                                   return new ValuedRange<>(
                                                                                                                            dateRange(
                                                                                                                                    range.getStartInclusive(),
                                                                                                                                    range.getEndExclusive()),
@@ -429,7 +429,7 @@ final class TimelineTest {
         ZonedDateTime                          oneMonthBefore   = dateTime.minus(1, ChronoUnit.MONTHS);
         ZonedDateTime                          oneMonthAfter    = dateTime.plus(1, ChronoUnit.MONTHS);
         Range<ZonedDateTime>                   calculationRange = Range.of(oneMonthBefore, oneMonthAfter);
-        TimelineSegment<ZonedDateTime, String> timeline         = rotations.toTimelineSegment(calculationRange);
+        TimelineSegment<ZonedDateTime, String> timeline         = rotations.toSegment(calculationRange);
         List<OnCall>                           oncalls          = new ArrayList<>();
         addIfNotNull(oncalls, false, timeline.findCurrentInterval(dateTime));
         addIfNotNull(oncalls, true, timeline.findNextInterval(dateTime));
@@ -437,11 +437,10 @@ final class TimelineTest {
     }
 
     private static void addIfNotNull(List<OnCall> oncalls,
-                                     boolean nextOnCall,
-                                     Interval<ZonedDateTime, List<String>> interval) {
-        interval.getValue()
-                .forEach(value -> {
-                    Range<ZonedDateTime> range          = interval.getRange();
+                                     boolean nextOnCall, ValuedRange<ZonedDateTime, List<String>> valuedRange) {
+        valuedRange.getValue()
+                   .forEach(value -> {
+                       Range<ZonedDateTime> range       = valuedRange.getRange();
                     ZonedDateTime        startInclusive = range.getStartInclusive();
                     ZonedDateTime        endExclusive   = range.getEndExclusive();
                     oncalls.add(new OnCall(value,
@@ -478,8 +477,8 @@ final class TimelineTest {
         return new ZonedRotationTimeline<>(dateRange(ZERO, endTime), rotationPeriod, restrictions, asList(recipients));
     }
 
-    private static Interval<Instant, String> overrideBetween(Instant startTime, Instant endTime, String name) {
-        return new Interval<>(Range.of(startTime, endTime), name);
+    private static ValuedRange<Instant, String> overrideBetween(Instant startTime, Instant endTime, String name) {
+        return new ValuedRange<>(Range.of(startTime, endTime), name);
     }
 
     private static Range<Instant> restrictTo(Instant startTime, Instant endTime) {

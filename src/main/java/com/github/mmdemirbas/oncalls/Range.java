@@ -62,7 +62,7 @@ public final class Range<C extends Comparable<? super C>> {
     /**
      * Returns intersection of this range with the given range.
      */
-    public Range<C> intersect(Range<? extends C> other) {
+    public Range<C> intersect(Range<C> other) {
         C start  = maxOf(startInclusive, other.startInclusive);
         C end    = minOf(endExclusive, other.endExclusive);
         C finalS = minOf(start, end);

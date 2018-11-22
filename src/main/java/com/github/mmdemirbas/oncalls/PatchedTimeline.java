@@ -22,7 +22,7 @@ public final class PatchedTimeline<C extends Comparable<? super C>, V> implement
     }
 
     @Override
-    public TimelineSegment<C, V> toTimelineSegment(Range<? extends C> calculationRange) {
+    public TimelineSegment<C, V> toSegment(Range<C> calculationRange) {
         return baseTimeline.mergeWith(patchTimelines,
                                       calculationRange,
                                       (values, patches) -> reduce((List<V>) new ArrayList<>(values),

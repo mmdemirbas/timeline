@@ -13,11 +13,11 @@ Written in pure Java using zero runtime dependency.
 
 ## Dependencies
 
-| Dependency Scope    | Dependencies    |
-| ------------------- | --------------- |
-| runtime             | (only jdk-8)    |
-| compile (provided)  | lombok          |
-| test                | junit5          |
+| Dependency Scope    | Dependencies          |
+| ------------------- | --------------------- |
+| runtime             | none (exceptjdk-8)    |
+| compile (provided)  | lombok                |
+| test                | junit5                |
 
 
 ## Design
@@ -26,14 +26,13 @@ Written in pure Java using zero runtime dependency.
 
 `Range` is a pair of `Comparable` values used as start & end points.
 
-`Interval` is an association between a `Range` and an arbitrary value.
+`ValuedRange` is an association between a `Range` and an arbitrary value.
 
 `Timeline` is the base interface of timelines. It has only one method,
-namely `TimelineSegment toTimelineSegment(Range<C>)`
+namely `TimelineSegment toSegment(Range<C>)`
 
 `TimelineSegment` is an interface representing a finite segment of
-a `Timeline` and allowing to associate its arbitrary sub-segments
-(`Interval`s) with a list of arbitrary values.
+a `Timeline` which consists of `ValuedRange`s.
 
 The `StaticTimeline` implements both the `Timeline` and `TimelineSegment`
 interfaces, and uses `NavigableMap` as and underlying 'interval map'
@@ -52,6 +51,11 @@ fixed duration, and assigns the given list of recipients to iterations
 one-by-one . This is the only class mentioning `java.time` package.
 Unlike previous ones which leaves time point type `C` as generic, this
 implementation hard-codes the time point type as `ZonedDateTime`.
+
+
+## DSM (Design Structur Matrix) of Classes
+
+![](doc/dsm.png)
 
 
 ## TODO

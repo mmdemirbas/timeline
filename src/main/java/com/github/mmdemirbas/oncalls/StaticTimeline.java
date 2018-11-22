@@ -17,8 +17,8 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
 
     private final NavigableMap<C, List<V>> intervalMap;
 
-    public static <C extends Comparable<? super C>, V> StaticTimeline<C, V> ofIntervals(Iterable<? extends Interval<? extends C, ? extends V>> intervals) {
-        return new StaticTimeline<>(Interval.buildIntervalMap(intervals));
+    public static <C extends Comparable<? super C>, V> StaticTimeline<C, V> ofIntervals(List<ValuedRange<C, V>> intervals) {
+        return new StaticTimeline<>(ValuedRange.buildIntervalMap(intervals));
     }
 
     private StaticTimeline(NavigableMap<C, List<V>> intervalMap) {
@@ -26,7 +26,7 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
     }
 
     @Override
-    public TimelineSegment<C, V> toTimelineSegment(Range<? extends C> calculationRange) {
+    public TimelineSegment<C, V> toSegment(Range<C> calculationRange) {
         C                        start = calculationRange.getStartInclusive();
         C                        end   = calculationRange.getEndExclusive();
         NavigableMap<C, List<V>> map   = new TreeMap<>(intervalMap.subMap(start, end));
@@ -47,8 +47,8 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
     }
 
     @Override
-    public TimelineSegment<C, V> newSegment(List<Interval<C, V>> intervals) {
-        return ofIntervals(intervals);
+    public TimelineSegment<C, V> newSegment(List<ValuedRange<C, V>> valuedRanges) {
+        return ofIntervals(valuedRanges);
     }
 
     @Override
@@ -62,24 +62,24 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
     }
 
     @Override
-    public Interval<C, List<V>> findCurrentInterval(C point) {
+    public ValuedRange<C, List<V>> findCurrentInterval(C point) {
         return getValuesOrEmpty(intervalMap.floorEntry(point));
     }
 
     @Override
-    public Interval<C, List<V>> findNextInterval(C point) {
+    public ValuedRange<C, List<V>> findNextInterval(C point) {
         return getValuesOrEmpty(intervalMap.higherEntry(point));
     }
 
-    private Interval<C, List<V>> getValuesOrEmpty(Entry<C, List<V>> entry) {
+    private ValuedRange<C, List<V>> getValuesOrEmpty(Entry<C, List<V>> entry) {
         if (entry != null) {
             C key     = entry.getKey();
             C nextKey = intervalMap.higherKey(key);
             if (nextKey != null) {
-                return new Interval<>(Range.of(key, nextKey), entry.getValue());
+                return new ValuedRange<>(Range.of(key, nextKey), entry.getValue());
             }
         }
-        return new Interval(null, emptyList());
+        return new ValuedRange(null, emptyList());
     }
 
     @Override

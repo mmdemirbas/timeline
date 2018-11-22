@@ -42,8 +42,8 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
     }
 
     @Override
-    public TimelineSegment<ZonedDateTime, V> toTimelineSegment(Range<? extends ZonedDateTime> calculationRange) {
-        List<Interval<ZonedDateTime, V>> intervals = new ArrayList<>();
+    public TimelineSegment<ZonedDateTime, V> toSegment(Range<ZonedDateTime> calculationRange) {
+        List<ValuedRange<ZonedDateTime, V>> valuedRanges = new ArrayList<>();
         if (!recipients.isEmpty()) {
             Range<ZonedDateTime> effectiveRange = rotationRange.intersect(calculationRange);
             long                 startIndex     = indexOfIterationAt(effectiveRange.getStartInclusive());
@@ -54,14 +54,14 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
             for (long index = startIndex; index <= endIndex; index++) {
                 V recipient = recipients.get((int) (index % recipients.size()));
                 for (Range<Instant> range : iterationRanges) {
-                    intervals.add(new Interval<>(Range.of(sum(offset, range.getStartInclusive()),
-                                                          sum(offset, range.getEndExclusive()))
-                                                      .intersect(effectiveRange), recipient));
+                    valuedRanges.add(new ValuedRange<>(Range.of(sum(offset, range.getStartInclusive()),
+                                                                sum(offset, range.getEndExclusive()))
+                                                            .intersect(effectiveRange), recipient));
                 }
                 offset = offset.plus(iterationDuration);
             }
         }
-        return StaticTimeline.ofIntervals(intervals);
+        return StaticTimeline.ofIntervals(valuedRanges);
     }
 
     private long indexOfIterationAt(ZonedDateTime point) {

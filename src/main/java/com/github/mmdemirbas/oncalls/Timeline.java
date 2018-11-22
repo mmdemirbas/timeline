@@ -1,7 +1,6 @@
 package com.github.mmdemirbas.oncalls;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 import static com.github.mmdemirbas.oncalls.Utils.map;
 
@@ -20,15 +19,14 @@ public interface Timeline<C extends Comparable<? super C>, V> {
      * @param <A> type of the values of the other timelines
      */
     default <A> TimelineSegment<C, V> mergeWith(List<Timeline<C, A>> timelines,
-                                                Range<? extends C> calculationRange,
-                                                BiFunction<List<V>, List<A>, List<V>> mergeFunction) {
-        return toTimelineSegment(calculationRange).mergeWith(map(timelines,
-                                                                 timeline -> timeline.toTimelineSegment(calculationRange)),
-                                                             mergeFunction);
+                                                Range<C> calculationRange,
+                                                Reducer<V, A> mergeFunction) {
+        return toSegment(calculationRange).mergeWith(map(timelines, timeline -> timeline.toSegment(calculationRange)),
+                                                     mergeFunction);
     }
 
     /**
-     * Converts the specified {@code calculationRange} part of this Timeline into a {@link TimelineSegment}
+     * Creates a {@link TimelineSegment} on the specified {@code calculationRange} of this Timeline.
      */
-    TimelineSegment<C, V> toTimelineSegment(Range<? extends C> calculationRange);
+    TimelineSegment<C, V> toSegment(Range<C> calculationRange);
 }

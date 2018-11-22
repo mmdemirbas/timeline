@@ -2,7 +2,6 @@ package com.github.mmdemirbas.oncalls;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Muhammed Demirbaş
  * @since 2018-11-22 09:56
  */
-public final class IntervalTest {
+public final class ValuedRangeTest {
     @Test
     void buildIntervalMap_NoEvents() {
         assertIntervalMap(mapOf(), asList());
@@ -60,15 +59,15 @@ public final class IntervalTest {
     }
 
     private static void assertIntervalMap(Map<Integer, List<String>> expected,
-                                          Collection<Interval<Integer, String>> intervals) {
-        assertEquals(expected, Interval.buildIntervalMap(intervals));
+                                          List<ValuedRange<Integer, String>> valuedRanges) {
+        assertEquals(expected, ValuedRange.buildIntervalMap(valuedRanges));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static <C extends Comparable<? super C>, V> Interval<C, V> interval(C startInclusive,
-                                                                                C endExclusive,
-                                                                                V value) {
-        return new Interval<>(Range.of(startInclusive, endExclusive), value);
+    private static <C extends Comparable<? super C>, V> ValuedRange<C, V> interval(C startInclusive,
+                                                                                   C endExclusive,
+                                                                                   V value) {
+        return new ValuedRange<>(Range.of(startInclusive, endExclusive), value);
     }
 }

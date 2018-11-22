@@ -25,7 +25,7 @@ public final class Utils {
 
     // todo: release a major version when ready
 
-    // todo: give better names to Interval & Range
+    // todo: give better names to ValuedRange & Range
 
     // todo: improve images -- split one-by-one, add tags to last 2
 

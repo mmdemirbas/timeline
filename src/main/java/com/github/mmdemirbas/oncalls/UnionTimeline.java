@@ -21,7 +21,7 @@ public final class UnionTimeline<C extends Comparable<? super C>, V> implements 
     }
 
     @Override
-    public TimelineSegment<C, V> toTimelineSegment(Range<? extends C> calculationRange) {
+    public TimelineSegment<C, V> toSegment(Range<C> calculationRange) {
         Timeline<C, V> seed = StaticTimeline.ofIntervals(Collections.emptyList());
         return seed.mergeWith(timelines,
                               calculationRange,
