@@ -1,6 +1,5 @@
 package com.github.mmdemirbas.oncalls;
 
-import com.github.mmdemirbas.oncalls.StaticTimeline.Interval;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
@@ -12,8 +11,11 @@ import static com.github.mmdemirbas.oncalls.Utils.pair;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-final class StaticTimelineTest {
-
+/**
+ * @author Muhammed Demirbaş
+ * @since 2018-11-22 09:56
+ */
+public final class IntervalTest {
     @Test
     void buildIntervalMap_NoEvents() {
         assertIntervalMap(mapOf(), asList());
