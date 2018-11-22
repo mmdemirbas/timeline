@@ -9,8 +9,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.mmdemirbas.oncalls.Utils.unmodifiableCopyOf;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * A {@link Timeline} implementation which represents a recurring period in a finite interval
@@ -38,7 +38,7 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
                                ? disjointIterationRanges
                                : singletonList(Range.of(Instant.EPOCH,
                                                         Instant.ofEpochSecond(0L, iterationDuration.toNanos())));
-        this.recipients = unmodifiableCopyOf(recipients);
+        this.recipients = unmodifiableList(new ArrayList<>(recipients));
     }
 
     @Override

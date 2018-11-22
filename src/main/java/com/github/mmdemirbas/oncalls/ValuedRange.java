@@ -3,12 +3,14 @@ package com.github.mmdemirbas.oncalls;
 import lombok.Value;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Function;
 
-import static com.github.mmdemirbas.oncalls.Utils.sorted;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableNavigableMap;
@@ -37,7 +39,11 @@ public final class ValuedRange<C extends Comparable<? super C>, V> {
         NavigableMap<C, List<V>> intervalMap   = new TreeMap<>();
         List<V>                  ongoingEvents = new ArrayList<>();
 
-        sorted(add.keySet(), remove.keySet()).forEach(point -> {
+        Set<C> sorted = new TreeSet<>(Comparator.comparing((Function<? super C, ? extends C>) it -> it));
+        sorted.addAll(add.keySet());
+        sorted.addAll(remove.keySet());
+
+        sorted.forEach(point -> {
             ongoingEvents.addAll(orEmpty(add.get(point)));
             ongoingEvents.removeAll(orEmpty(remove.get(point)));
             intervalMap.put(point, unmodifiableList(new ArrayList<>(ongoingEvents)));

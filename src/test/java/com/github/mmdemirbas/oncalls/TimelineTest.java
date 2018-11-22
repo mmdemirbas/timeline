@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static com.github.mmdemirbas.oncalls.Utils.map;
-import static com.github.mmdemirbas.oncalls.Utils.pair;
+import static com.github.mmdemirbas.oncalls.TestUtils.map;
+import static com.github.mmdemirbas.oncalls.TestUtils.pair;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -437,17 +437,18 @@ final class TimelineTest {
     }
 
     private static void addIfNotNull(List<OnCall> oncalls,
-                                     boolean nextOnCall, ValuedRange<ZonedDateTime, List<String>> valuedRange) {
+                                     boolean nextOnCall,
+                                     ValuedRange<ZonedDateTime, List<String>> valuedRange) {
         valuedRange.getValue()
                    .forEach(value -> {
-                       Range<ZonedDateTime> range       = valuedRange.getRange();
-                    ZonedDateTime        startInclusive = range.getStartInclusive();
-                    ZonedDateTime        endExclusive   = range.getEndExclusive();
-                    oncalls.add(new OnCall(value,
-                                           !nextOnCall ? ZERO : startInclusive.toInstant(),
-                                           nextOnCall ? ZERO : endExclusive.toInstant(),
-                                           nextOnCall));
-                });
+                       Range<ZonedDateTime> range          = valuedRange.getRange();
+                       ZonedDateTime        startInclusive = range.getStartInclusive();
+                       ZonedDateTime        endExclusive   = range.getEndExclusive();
+                       oncalls.add(new OnCall(value,
+                                              !nextOnCall ? ZERO : startInclusive.toInstant(),
+                                              nextOnCall ? ZERO : endExclusive.toInstant(),
+                                              nextOnCall));
+                   });
     }
 
     private static Entry<Instant, List<OnCall>> expectAt(Instant atTime, OnCall... expecteds) {

@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.mmdemirbas.oncalls.Utils.mapOf;
-import static com.github.mmdemirbas.oncalls.Utils.pair;
+import static com.github.mmdemirbas.oncalls.TestUtils.mapOf;
+import static com.github.mmdemirbas.oncalls.TestUtils.pair;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

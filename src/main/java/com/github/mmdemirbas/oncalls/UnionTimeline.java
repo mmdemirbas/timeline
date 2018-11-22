@@ -1,12 +1,13 @@
 package com.github.mmdemirbas.oncalls;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.mmdemirbas.oncalls.Utils.unmodifiableCopyOf;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * A {@link Timeline} implementation which works as a union of multiple {@link Timeline}s.
@@ -17,7 +18,7 @@ public final class UnionTimeline<C extends Comparable<? super C>, V> implements 
     private final List<Timeline<C, V>> timelines;
 
     public UnionTimeline(List<Timeline<C, V>> timelines) {
-        this.timelines = unmodifiableCopyOf(timelines);
+        this.timelines = unmodifiableList(new ArrayList<>(timelines));
     }
 
     @Override

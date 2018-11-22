@@ -62,3 +62,5 @@ implementation hard-codes the time point type as `ZonedDateTime`.
 
 - Write more granular unit tests
 - Make a release
+- Improve images -- split one-by-one, add tags to last 2
+- Write tests against interfaces as much as possible

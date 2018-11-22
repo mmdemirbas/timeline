@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-import static com.github.mmdemirbas.oncalls.Utils.reduce;
-import static com.github.mmdemirbas.oncalls.Utils.unmodifiableCopyOf;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * A {@link Timeline} implementation which applies patches on top of a base timeline.
@@ -18,15 +17,17 @@ public final class PatchedTimeline<C extends Comparable<? super C>, V> implement
 
     public PatchedTimeline(Timeline<C, V> baseTimeline, List<Timeline<C, UnaryOperator<List<V>>>> patchTimelines) {
         this.baseTimeline = baseTimeline;
-        this.patchTimelines = unmodifiableCopyOf(patchTimelines);
+        this.patchTimelines = unmodifiableList(new ArrayList<>(patchTimelines));
     }
 
     @Override
     public TimelineSegment<C, V> toSegment(Range<C> calculationRange) {
-        return baseTimeline.mergeWith(patchTimelines,
-                                      calculationRange,
-                                      (values, patches) -> reduce((List<V>) new ArrayList<>(values),
-                                                                  patches,
-                                                                  (acc, patch) -> patch.apply(acc)));
+        return baseTimeline.mergeWith(patchTimelines, calculationRange, (values, patches) -> {
+            List<V> result = new ArrayList<>(values);
+            for (UnaryOperator<List<V>> patch : patches) {
+                result = patch.apply(result);
+            }
+            return result;
+        });
     }
 }

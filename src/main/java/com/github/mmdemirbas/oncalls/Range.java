@@ -4,12 +4,11 @@ import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
-import static com.github.mmdemirbas.oncalls.Utils.maxOf;
-import static com.github.mmdemirbas.oncalls.Utils.minOf;
-import static com.github.mmdemirbas.oncalls.Utils.sortedBy;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
@@ -69,6 +68,14 @@ public final class Range<C extends Comparable<? super C>> {
         return new Range<>(finalS, end);
     }
 
+    private static <C extends Comparable<? super C>> C maxOf(C x, C y) {
+        return (x.compareTo(y) > 0) ? x : y;
+    }
+
+    private static <C extends Comparable<? super C>> C minOf(C x, C y) {
+        return (x.compareTo(y) < 0) ? x : y;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -84,7 +91,9 @@ public final class Range<C extends Comparable<? super C>> {
         C              start          = null;
         C              end            = null;
 
-        Set<Range<C>> rangesInStartOrder = sortedBy(Range::getStartInclusive, ranges);
+        Set<Range<C>> rangesInStartOrder = new TreeSet<>(Comparator.comparing(Range::getStartInclusive));
+        rangesInStartOrder.addAll(ranges);
+
         for (Range<C> range : rangesInStartOrder) {
             if ((end == null) || (end.compareTo(range.getStartInclusive()) < 0)) {
                 addRange(disjointRanges, start, end);

@@ -1,8 +1,8 @@
 package com.github.mmdemirbas.oncalls;
 
 import java.util.List;
-
-import static com.github.mmdemirbas.oncalls.Utils.map;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * Base interface for all timelines.
@@ -20,9 +20,11 @@ public interface Timeline<C extends Comparable<? super C>, V> {
      */
     default <A> TimelineSegment<C, V> mergeWith(List<Timeline<C, A>> timelines,
                                                 Range<C> calculationRange,
-                                                Reducer<V, A> mergeFunction) {
-        return toSegment(calculationRange).mergeWith(map(timelines, timeline -> timeline.toSegment(calculationRange)),
-                                                     mergeFunction);
+                                                BiFunction<List<V>, List<A>, List<V>> mergeFunction) {
+        List<TimelineSegment<C, A>> segments = timelines.stream()
+                                                        .map(timeline -> timeline.toSegment(calculationRange))
+                                                        .collect(Collectors.toList());
+        return toSegment(calculationRange).mergeWith(segments, mergeFunction);
     }
 
     /**

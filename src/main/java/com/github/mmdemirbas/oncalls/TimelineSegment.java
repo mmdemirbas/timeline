@@ -1,12 +1,14 @@
 package com.github.mmdemirbas.oncalls;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import static com.github.mmdemirbas.oncalls.Utils.reduce;
-import static com.github.mmdemirbas.oncalls.Utils.sorted;
 import static java.util.Collections.emptyList;
 
 /**
@@ -18,16 +20,22 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
      *
      * @param <A> value type of the other segments
      */
-    default <A> TimelineSegment<C, V> mergeWith(List<TimelineSegment<C, A>> segments, Reducer<V, A> mergeFunction) {
-        return reduce(this, segments, (acc, segment) -> {
+    default <A> TimelineSegment<C, V> mergeWith(List<TimelineSegment<C, A>> segments,
+                                                BiFunction<List<V>, List<A>, List<V>> mergeFunction) {
+        TimelineSegment<C, V> result = this;
+        for (TimelineSegment<C, A> segment : segments) {
             List<ValuedRange<C, V>> valuedRanges = new ArrayList<>();
             List<V>                 values       = emptyList();
             C                       start        = null;
             C                       end          = null;
 
-            for (C point : sorted(acc.getKeyPoints(), segment.getKeyPoints())) {
+            Set<C> sorted = new TreeSet<>(Comparator.comparing((Function<? super C, ? extends C>) it -> it));
+            sorted.addAll(result.getKeyPoints());
+            sorted.addAll(segment.getKeyPoints());
+
+            for (C point : sorted) {
                 end = point;
-                List<V> mergedValues = mergeFunction.merge(acc.findCurrentValues(point),
+                List<V> mergedValues = mergeFunction.apply(result.findCurrentValues(point),
                                                            segment.findCurrentValues(point));
                 if (!values.equals(mergedValues)) {
                     if (!values.isEmpty()) {
@@ -43,8 +51,9 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
                 Range<C> range = Range.of(start, end);
                 values.forEach(value -> valuedRanges.add(new ValuedRange<>(range, value)));
             }
-            return newSegment(valuedRanges);
-        });
+            result = newSegment(valuedRanges);
+        }
+        return result;
     }
 
     /**
