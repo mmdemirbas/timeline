@@ -13,16 +13,16 @@ Written in pure Java using zero runtime dependency.
 
 ## Dependencies
 
-| Dependency Scope    | Dependencies          |
-| ------------------- | --------------------- |
-| runtime             | none (exceptjdk-8)    |
-| compile (provided)  | lombok                |
-| test                | junit5                |
+| Dependency Scope    | Dependencies      |
+| ------------------- | ----------------- |
+| runtime             | none (only jdk-8) |
+| compile (provided)  | lombok            |
+| test                | junit5            |
 
 
 ## Design
 
-![](doc/uml.png)
+![](doc/fields-uml.png)
 
 `Range` is a pair of `Comparable` values used as start & end points.
 
@@ -51,6 +51,10 @@ fixed duration, and assigns the given list of recipients to iterations
 one-by-one . This is the only class mentioning `java.time` package.
 Unlike previous ones which leaves time point type `C` as generic, this
 implementation hard-codes the time point type as `ZonedDateTime`.
+
+## Detailed UML
+
+![](doc/methods-uml.png)
 
 
 ## DSM (Design Structur Matrix) of Classes
