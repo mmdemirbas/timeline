@@ -22,12 +22,11 @@ public final class PatchedTimeline<C extends Comparable<? super C>, V> implement
     }
 
     @Override
-    public StaticTimeline<C, V> toStaticTimeline(Range<? extends C> calculationRange) {
-        return baseTimeline.toStaticTimeline(calculationRange)
-                           .combine(patchTimelines,
-                                    calculationRange,
-                                    (values, patches) -> reduce((List<V>) new ArrayList<>(values),
-                                                                patches,
-                                                                (acc, patch) -> patch.apply(acc)));
+    public TimelineSegment<C, V> toTimelineSegment(Range<? extends C> calculationRange) {
+        return baseTimeline.mergeWith(patchTimelines,
+                                      calculationRange,
+                                      (values, patches) -> reduce((List<V>) new ArrayList<>(values),
+                                                                  patches,
+                                                                  (acc, patch) -> patch.apply(acc)));
     }
 }

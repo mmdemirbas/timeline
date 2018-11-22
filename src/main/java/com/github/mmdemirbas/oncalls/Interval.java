@@ -26,10 +26,12 @@ public final class Interval<C extends Comparable<? super C>, V> {
     private final Range<C> range;
     private final V        value;
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Builds an interval map which can be considered as another form of an "interval tree".
      */
-    public static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(Iterable<Interval<C, V>> intervals) {
+    public static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(Iterable<? extends Interval<? extends C, ? extends V>> intervals) {
         NavigableMap<C, List<V>> add           = indexBy(intervals, Range::getStartInclusive);
         NavigableMap<C, List<V>> remove        = indexBy(intervals, Range::getEndExclusive);
         NavigableMap<C, List<V>> intervalMap   = new TreeMap<>();
@@ -43,11 +45,11 @@ public final class Interval<C extends Comparable<? super C>, V> {
         return unmodifiableNavigableMap(intervalMap);
     }
 
-    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> indexBy(Iterable<Interval<C, V>> intervals,
-                                                                                         Function<Range<C>, C> fn) {
+    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> indexBy(Iterable<? extends Interval<? extends C, ? extends V>> intervals,
+                                                                                         Function<? super Range<? extends C>, ? extends C> fn) {
         NavigableMap<C, List<V>> index = new TreeMap<>();
         intervals.forEach(interval -> {
-            Range<C> range = interval.getRange();
+            Range<? extends C> range = interval.getRange();
             if (!range.isEmpty()) {
                 C       key    = fn.apply(range);
                 List<V> values = index.computeIfAbsent(key, x -> new ArrayList<>());

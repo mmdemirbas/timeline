@@ -149,8 +149,8 @@ final class ZonedRotationTimelineTest {
                                                                                   iterationDuration,
                                                                                   subRanges,
                                                                                   participants);
-        StaticTimeline<ZonedDateTime, Integer> timeline = recurrence.toStaticTimeline(calculationRange);
-        assertEquals(expected, timeline.getIntervalMap());
+        TimelineSegment<ZonedDateTime, Integer> timeline = recurrence.toTimelineSegment(calculationRange);
+        assertEquals(expected, timeline.toIntervalMap());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

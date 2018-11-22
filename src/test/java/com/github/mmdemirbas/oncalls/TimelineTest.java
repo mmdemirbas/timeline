@@ -16,7 +16,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 import static com.github.mmdemirbas.oncalls.Utils.map;
 import static com.github.mmdemirbas.oncalls.Utils.pair;
@@ -400,15 +399,16 @@ final class TimelineTest {
                                          List<Interval<Instant, String>> overrides,
                                          Entry<Instant, List<OnCall>>... expecteds) {
         Timeline<ZonedDateTime, String> snapshot = new PatchedTimeline<>(new UnionTimeline<>(rotations),
-                                                                         asList(new StaticTimelineImp<ZonedDateTime, UnaryOperator<List<String>>>(
-                                                                                 map(overrides, override -> {
-                                                                                     Range<Instant> range = override.getRange();
-                                                                                     return new Interval<>(dateRange(
-                                                                                             range.getStartInclusive(),
-                                                                                             range.getEndExclusive()),
-                                                                                                           ignored -> asList(
-                                                                                                                   override.getValue()));
-                                                                                 }))));
+                                                                         asList(StaticTimeline.ofIntervals(map(overrides,
+                                                                                                               override -> {
+                                                                                                                   Range<Instant> range = override.getRange();
+                                                                                                                   return new Interval<>(
+                                                                                                                           dateRange(
+                                                                                                                                   range.getStartInclusive(),
+                                                                                                                                   range.getEndExclusive()),
+                                                                                                                           ignored -> asList(
+                                                                                                                                   override.getValue()));
+                                                                                                               }))));
 
         // execute the method
         List<Entry<Instant, List<OnCall>>> actuals = new ArrayList<>();
@@ -425,12 +425,12 @@ final class TimelineTest {
     }
 
     private static List<OnCall> getRecipientsWithInterval(Timeline<ZonedDateTime, String> rotations, long millis) {
-        ZonedDateTime                         dateTime         = instantToZonedDateTime(Instant.ofEpochMilli(millis));
-        ZonedDateTime                         oneMonthBefore   = dateTime.minus(1, ChronoUnit.MONTHS);
-        ZonedDateTime                         oneMonthAfter    = dateTime.plus(1, ChronoUnit.MONTHS);
-        Range<ZonedDateTime>                  calculationRange = Range.of(oneMonthBefore, oneMonthAfter);
-        StaticTimeline<ZonedDateTime, String> timeline         = rotations.toStaticTimeline(calculationRange);
-        List<OnCall>                          oncalls          = new ArrayList<>();
+        ZonedDateTime                          dateTime         = instantToZonedDateTime(Instant.ofEpochMilli(millis));
+        ZonedDateTime                          oneMonthBefore   = dateTime.minus(1, ChronoUnit.MONTHS);
+        ZonedDateTime                          oneMonthAfter    = dateTime.plus(1, ChronoUnit.MONTHS);
+        Range<ZonedDateTime>                   calculationRange = Range.of(oneMonthBefore, oneMonthAfter);
+        TimelineSegment<ZonedDateTime, String> timeline         = rotations.toTimelineSegment(calculationRange);
+        List<OnCall>                           oncalls          = new ArrayList<>();
         addIfNotNull(oncalls, false, timeline.findCurrentInterval(dateTime));
         addIfNotNull(oncalls, true, timeline.findNextInterval(dateTime));
         return oncalls;

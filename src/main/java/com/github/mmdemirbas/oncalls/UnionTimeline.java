@@ -1,6 +1,7 @@
 package com.github.mmdemirbas.oncalls;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,14 +21,12 @@ public final class UnionTimeline<C extends Comparable<? super C>, V> implements 
     }
 
     @Override
-    public StaticTimeline<C, V> toStaticTimeline(Range<? extends C> calculationRange) {
-        // todo: reduce without seed
-        return StaticTimelineImp.<C, V>emptyTimeline().toStaticTimeline(calculationRange)
-                                                      .combine(timelines,
-                                                               calculationRange,
-                                                               (thisValues, otherValues) -> Stream.of(thisValues,
-                                                                                                      otherValues)
-                                                                                                  .flatMap(Collection::stream)
-                                                                                                  .collect(Collectors.toList()));
+    public TimelineSegment<C, V> toTimelineSegment(Range<? extends C> calculationRange) {
+        Timeline<C, V> seed = StaticTimeline.ofIntervals(Collections.emptyList());
+        return seed.mergeWith(timelines,
+                              calculationRange,
+                              (thisValues, otherValues) -> Stream.of(thisValues, otherValues)
+                                                                 .flatMap(Collection::stream)
+                                                                 .collect(Collectors.toList()));
     }
 }

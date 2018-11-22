@@ -42,7 +42,7 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
     }
 
     @Override
-    public StaticTimeline<ZonedDateTime, V> toStaticTimeline(Range<? extends ZonedDateTime> calculationRange) {
+    public TimelineSegment<ZonedDateTime, V> toTimelineSegment(Range<? extends ZonedDateTime> calculationRange) {
         List<Interval<ZonedDateTime, V>> intervals = new ArrayList<>();
         if (!recipients.isEmpty()) {
             Range<ZonedDateTime> effectiveRange = rotationRange.intersect(calculationRange);
@@ -61,7 +61,7 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
                 offset = offset.plus(iterationDuration);
             }
         }
-        return new StaticTimelineImp<>(intervals);
+        return StaticTimeline.ofIntervals(intervals);
     }
 
     private long indexOfIterationAt(ZonedDateTime point) {

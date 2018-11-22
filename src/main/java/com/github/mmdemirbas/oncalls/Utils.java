@@ -31,6 +31,8 @@ public final class Utils {
 
     // todo: dependency matrix resmi de koy
 
+    // todo: interface ardına saklanan sınıflar için testleri de bu interface'lere karşı koş
+
     @SafeVarargs
     public static <K, V> Map<K, V> mapOf(Entry<K, V>... entries) {
         Map<K, V> map = new LinkedHashMap<>();
