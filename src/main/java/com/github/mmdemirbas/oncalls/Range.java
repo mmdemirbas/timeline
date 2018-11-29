@@ -84,10 +84,10 @@ public final class Range<C extends Comparable<? super C>> {
      * Empty ranges will not appear in the result set.
      */
     public static <C extends Comparable<? super C>> List<Range<C>> toDisjointRanges(Collection<Range<C>> ranges) {
-        return Range.<C, Range<C>>toDisjointRanges(ranges,
-                                                   it -> it,
-                                                   (current, joining) -> true,
-                                                   (newRange, joining) -> newRange);
+        return toDisjointRanges(ranges,
+                                (Range<C> range) -> range,
+                                (current, joining) -> true,
+                                (newRange, joining) -> newRange);
     }
 
     public static <C extends Comparable<? super C>, R> List<R> toDisjointRanges(Collection<? extends R> items,

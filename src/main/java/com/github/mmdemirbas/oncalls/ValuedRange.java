@@ -3,9 +3,10 @@ package com.github.mmdemirbas.oncalls;
 import lombok.Value;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collection;
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -39,18 +40,28 @@ public final class ValuedRange<C extends Comparable<? super C>, V> {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public static <C extends Comparable<? super C>, V> List<ValuedRange<C, V>> toDisjointIntervals(Collection<ValuedRange<C, V>> intervals) {
+        return Range.toDisjointRanges(intervals,
+                                      (ValuedRange<C, V> interval) -> interval.getRange(),
+                                      (current, joining) -> Objects.equals(current.value, joining.value),
+                                      (range, joining) -> of(range, joining.value));
+    }
+
     /**
      * Builds an interval map which can be considered as another form of an "interval tree".
      */
-    public static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(List<ValuedRange<C, V>> intervals) {
-        NavigableMap<C, List<V>> add           = indexBy(intervals, Range::getStartInclusive);
-        NavigableMap<C, List<V>> remove        = indexBy(intervals, Range::getEndExclusive);
-        NavigableMap<C, List<V>> intervalMap   = new TreeMap<>();
-        List<V>                  ongoingEvents = new ArrayList<>();
+    public static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> buildIntervalMap(Collection<ValuedRange<C, V>> intervals) {
+        List<ValuedRange<C, V>> disjointIntervals = toDisjointIntervals(intervals);
 
-        Set<C> sorted = new TreeSet<>(Comparator.comparing((Function<? super C, ? extends C>) it -> it));
+        NavigableMap<C, List<V>> add    = index(disjointIntervals, Range::getStartInclusive);
+        NavigableMap<C, List<V>> remove = index(disjointIntervals, Range::getEndExclusive);
+
+        Set<C> sorted = new TreeSet<>();
         sorted.addAll(add.keySet());
         sorted.addAll(remove.keySet());
+
+        NavigableMap<C, List<V>> intervalMap   = new TreeMap<>();
+        List<V>                  ongoingEvents = new ArrayList<>();
 
         sorted.forEach(point -> {
             ongoingEvents.addAll(orEmpty(add.get(point)));
@@ -60,21 +71,20 @@ public final class ValuedRange<C extends Comparable<? super C>, V> {
         return unmodifiableNavigableMap(intervalMap);
     }
 
-    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> indexBy(Iterable<ValuedRange<C, V>> intervals,
-                                                                                         Function<? super Range<C>, C> fn) {
+    private static <C extends Comparable<? super C>, V> NavigableMap<C, List<V>> index(Iterable<ValuedRange<C, V>> items,
+                                                                                       Function<Range<C>, C> keyExtractor) {
         NavigableMap<C, List<V>> index = new TreeMap<>();
-        intervals.forEach(interval -> {
-            Range<C> range = interval.getRange();
+        items.forEach(item -> {
+            Range<C> range = item.range;
             if (!range.isEmpty()) {
-                C       key    = fn.apply(range);
-                List<V> values = index.computeIfAbsent(key, x -> new ArrayList<>());
-                values.add(interval.getValue());
+                C key = keyExtractor.apply(range);
+                index.computeIfAbsent(key, x -> new ArrayList<>()).add(item.value);
             }
         });
         return index;
     }
 
-    private static <V> List<V> orEmpty(List<V> input) {
-        return (input == null) ? emptyList() : input;
+    private static <V> List<V> orEmpty(List<V> list) {
+        return (list == null) ? emptyList() : list;
     }
 }

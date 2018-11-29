@@ -58,6 +58,18 @@ public final class ValuedRangeTest {
                                 pair(7, asList())), asList(interval(1, 7, "a"), interval(3, 5, "b")));
     }
 
+    @Test
+    void buildIntervalMap_SuccessiveEventsWithSameValue() {
+        assertIntervalMap(mapOf(pair(1, asList("a")), pair(7, asList())),
+                          asList(interval(1, 3, "a"), interval(3, 5, "a"), interval(5, 7, "a")));
+    }
+
+    @Test
+    void buildIntervalMap_SuccessiveEventsWithDifferentValue() {
+        assertIntervalMap(mapOf(pair(1, asList("a")), pair(3, asList("b")), pair(5, asList("c")), pair(7, asList())),
+                          asList(interval(1, 3, "a"), interval(3, 5, "b"), interval(5, 7, "c")));
+    }
+
     private static void assertIntervalMap(Map<Integer, List<String>> expected,
                                           List<ValuedRange<Integer, String>> valuedRanges) {
         assertEquals(expected, ValuedRange.buildIntervalMap(valuedRanges));
