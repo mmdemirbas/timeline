@@ -6,8 +6,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
@@ -79,39 +80,59 @@ public final class Range<C extends Comparable<? super C>> {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Returns a set of disjoint ranges by joining intersecting, overlapping and successive ranges.
+     * Returns a sorted list of unique disjoint ranges by joining intersecting, overlapping and successive ranges.
      * Empty ranges will not appear in the result set.
      */
     public static <C extends Comparable<? super C>> List<Range<C>> toDisjointRanges(Collection<Range<C>> ranges) {
-        if ((ranges == null) || ranges.isEmpty()) {
+        return Range.<C, Range<C>>toDisjointRanges(ranges,
+                                                   it -> it,
+                                                   (current, joining) -> true,
+                                                   (newRange, joining) -> newRange);
+    }
+
+    public static <C extends Comparable<? super C>, R> List<R> toDisjointRanges(Collection<? extends R> items,
+                                                                                Function<? super R, Range<C>> getRange,
+                                                                                BiPredicate<? super R, ? super R> canJoinIfSuccessive,
+                                                                                BiFunction<? super Range<C>, ? super R, ? extends R> create) {
+        if ((items == null) || items.isEmpty()) {
             return emptyList();
         }
 
-        List<Range<C>> disjointRanges = new ArrayList<>();
-        C              start          = null;
-        C              end            = null;
+        List<R> disjointRanges = new ArrayList<>();
+        C       start          = null;
+        C       end            = null;
+        R       joiningItem    = null;
 
-        Set<Range<C>> rangesInStartOrder = new TreeSet<>(Comparator.comparing(Range::getStartInclusive));
-        rangesInStartOrder.addAll(ranges);
+        List<R> sorted = new ArrayList<>(items);
+        sorted.sort(Comparator.comparing(r -> getRange.apply(r).getStartInclusive()));
 
-        for (Range<C> range : rangesInStartOrder) {
-            if ((end == null) || (end.compareTo(range.getStartInclusive()) < 0)) {
-                addRange(disjointRanges, start, end);
-                start = range.getStartInclusive();
-                end = range.getEndExclusive();
-            } else {
-                end = maxOf(end, range.getEndExclusive());
+        for (R item : sorted) {
+            Range<C> range    = getRange.apply(item);
+            C        newStart = range.getStartInclusive();
+            C        newEnd   = range.getEndExclusive();
+
+            if ((end == null) || (end.compareTo(newStart) < 0) || !canJoinIfSuccessive.test(item, joiningItem)) {
+                addRange(disjointRanges, start, end, create, joiningItem);
+                start = newStart;
+                end = newEnd;
+                joiningItem = item;
+            } else if (end.compareTo(newEnd) < 0) {
+                end = newEnd;
             }
         }
-        addRange(disjointRanges, start, end);
+        addRange(disjointRanges, start, end, create, joiningItem);
         return unmodifiableList(disjointRanges);
     }
 
-    private static <C extends Comparable<? super C>> void addRange(Collection<Range<C>> output, C start, C end) {
+    private static <R, C extends Comparable<? super C>> void addRange(Collection<? super R> output,
+                                                                      C start,
+                                                                      C end,
+                                                                      BiFunction<? super Range<C>, ? super R, ? extends R> create,
+                                                                      R joiningItem) {
         if ((start != null) && (end != null)) {
             Range<C> range = of(start, end);
             if (!range.isEmpty()) {
-                output.add(range);
+                output.add(create.apply(range, joiningItem));
             }
         }
     }
