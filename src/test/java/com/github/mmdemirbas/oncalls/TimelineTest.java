@@ -8,7 +8,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,6 +15,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.github.mmdemirbas.oncalls.TestUtils.map;
 import static com.github.mmdemirbas.oncalls.TestUtils.pair;
@@ -23,10 +25,12 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class TimelineTest {
-    private static final OnCall[] NO_ONCALL = new OnCall[0];
-    private static final Duration HOURLY    = Duration.ofHours(1);
-    private static final Duration DAILY     = Duration.ofDays(1);
-    public static final  Instant  ZERO      = Instant.EPOCH;
+    private static final OnCall[] NO_ONCALL   = new OnCall[0];
+    private static final Duration HOURLY      = Duration.ofHours(1);
+    private static final Duration DAILY       = Duration.ofDays(1);
+    private static final Duration THIRTY_DAYS = Duration.ofDays(30);
+    private static final Instant  ZERO        = Instant.EPOCH;
+    private static final Instant  INF         = Instant.MAX;
 
     @Test
     void infiniteRotation_FullTest() {
@@ -233,11 +237,18 @@ final class TimelineTest {
     }
 
     @Test
-    void singleUserInifiniteRotation() {
+    void singleUserInifiniteRotation_at0() {
         assertRecipients(TimelineTest::getRecipientsWithInterval,
                          asList(rotateForever(DAILY, "A")),
                          asList(),
-                         expectAt(hour(0), onCallUntil(hour(0), "A")));
+                         expectAt(hour(0), onCallUntil(INF, "A")));
+    }
+
+    @Test
+    void singleUserInifiniteRotation_at24() {
+        assertRecipients(TimelineTest::getRecipientsWithInterval,
+                         asList(rotateForever(DAILY, "A")),
+                         asList(), expectAt(hour(24), onCallUntil(INF, "A")));
     }
 
     @Test
@@ -245,37 +256,37 @@ final class TimelineTest {
         assertRecipients(TimelineTest::getRecipientsWithInterval,
                          asList(rotateForever(DAILY, "A")),
                          asList(),
-                         expectAt(hour(0), onCallUntil(hour(0), "A")),
-                         expectAt(hour(1), onCallUntil(hour(0), "A")),
-                         expectAt(hour(2), onCallUntil(hour(0), "A")),
-                         expectAt(hour(3), onCallUntil(hour(0), "A")),
-                         expectAt(hour(4), onCallUntil(hour(0), "A")),
-                         expectAt(hour(5), onCallUntil(hour(0), "A")),
-                         expectAt(hour(6), onCallUntil(hour(0), "A")),
-                         expectAt(hour(7), onCallUntil(hour(0), "A")),
-                         expectAt(hour(8), onCallUntil(hour(0), "A")),
-                         expectAt(hour(9), onCallUntil(hour(0), "A")),
-                         expectAt(hour(10), onCallUntil(hour(0), "A")),
-                         expectAt(hour(11), onCallUntil(hour(0), "A")),
-                         expectAt(hour(12), onCallUntil(hour(0), "A")),
-                         expectAt(hour(13), onCallUntil(hour(0), "A")),
-                         expectAt(hour(14), onCallUntil(hour(0), "A")),
-                         expectAt(hour(15), onCallUntil(hour(0), "A")),
-                         expectAt(hour(16), onCallUntil(hour(0), "A")),
-                         expectAt(hour(17), onCallUntil(hour(0), "A")),
-                         expectAt(hour(18), onCallUntil(hour(0), "A")),
-                         expectAt(hour(19), onCallUntil(hour(0), "A")),
-                         expectAt(hour(20), onCallUntil(hour(0), "A")),
-                         expectAt(hour(21), onCallUntil(hour(0), "A")),
-                         expectAt(hour(22), onCallUntil(hour(0), "A")),
-                         expectAt(hour(23), onCallUntil(hour(0), "A")),
-                         expectAt(hour(24), onCallUntil(hour(0), "A")),
-                         expectAt(hour(25), onCallUntil(hour(0), "A")),
-                         expectAt(hour(26), onCallUntil(hour(0), "A")),
-                         expectAt(hour(27), onCallUntil(hour(0), "A")),
-                         expectAt(hour(28), onCallUntil(hour(0), "A")),
-                         expectAt(hour(29), onCallUntil(hour(0), "A")),
-                         expectAt(hour(30), onCallUntil(hour(0), "A")));
+                         expectAt(hour(0), onCallUntil(INF, "A")),
+                         expectAt(hour(1), onCallUntil(INF, "A")),
+                         expectAt(hour(2), onCallUntil(INF, "A")),
+                         expectAt(hour(3), onCallUntil(INF, "A")),
+                         expectAt(hour(4), onCallUntil(INF, "A")),
+                         expectAt(hour(5), onCallUntil(INF, "A")),
+                         expectAt(hour(6), onCallUntil(INF, "A")),
+                         expectAt(hour(7), onCallUntil(INF, "A")),
+                         expectAt(hour(8), onCallUntil(INF, "A")),
+                         expectAt(hour(9), onCallUntil(INF, "A")),
+                         expectAt(hour(10), onCallUntil(INF, "A")),
+                         expectAt(hour(11), onCallUntil(INF, "A")),
+                         expectAt(hour(12), onCallUntil(INF, "A")),
+                         expectAt(hour(13), onCallUntil(INF, "A")),
+                         expectAt(hour(14), onCallUntil(INF, "A")),
+                         expectAt(hour(15), onCallUntil(INF, "A")),
+                         expectAt(hour(16), onCallUntil(INF, "A")),
+                         expectAt(hour(17), onCallUntil(INF, "A")),
+                         expectAt(hour(18), onCallUntil(INF, "A")),
+                         expectAt(hour(19), onCallUntil(INF, "A")),
+                         expectAt(hour(20), onCallUntil(INF, "A")),
+                         expectAt(hour(21), onCallUntil(INF, "A")),
+                         expectAt(hour(22), onCallUntil(INF, "A")),
+                         expectAt(hour(23), onCallUntil(INF, "A")),
+                         expectAt(hour(24), onCallUntil(INF, "A")),
+                         expectAt(hour(25), onCallUntil(INF, "A")),
+                         expectAt(hour(26), onCallUntil(INF, "A")),
+                         expectAt(hour(27), onCallUntil(INF, "A")),
+                         expectAt(hour(28), onCallUntil(INF, "A")),
+                         expectAt(hour(29), onCallUntil(INF, "A")),
+                         expectAt(hour(30), onCallUntil(INF, "A")));
     }
 
     @Test
@@ -386,7 +397,7 @@ final class TimelineTest {
         Instant endTime;
         boolean next;
 
-        public OnCall(String name, Instant startTime, Instant endTime, boolean next) {
+        OnCall(String name, Instant startTime, Instant endTime, boolean next) {
             this.name = name;
             this.startTime = startTime;
             this.endTime = endTime;
@@ -400,15 +411,7 @@ final class TimelineTest {
                                          Entry<Instant, List<OnCall>>... expecteds) {
         Timeline<ZonedDateTime, String> snapshot = new PatchedTimeline<>(new UnionTimeline<>(rotations),
                                                                          asList(StaticTimeline.ofIntervals(map(overrides,
-                                                                                                               override -> {
-                                                                                                                   Range<Instant> range = override.getRange();
-                                                                                                                   return new ValuedRange<>(
-                                                                                                                           dateRange(
-                                                                                                                                   range.getStartInclusive(),
-                                                                                                                                   range.getEndExclusive()),
-                                                                                                                           ignored -> asList(
-                                                                                                                                   override.getValue()));
-                                                                                                               }))));
+                                                                                                               TimelineTest::asPatch))));
 
         // execute the method
         List<Entry<Instant, List<OnCall>>> actuals = new ArrayList<>();
@@ -419,15 +422,38 @@ final class TimelineTest {
             actuals.add(pair(time, actual));
         }
 
+        // prepare for comparison
+        List<Entry<Instant, List<OnCall>>> expectedsModified = Stream.of(expecteds).map(expected -> {
+            Instant calculationOffset = expected.getKey();
+            return pair(calculationOffset,
+                        expected.getValue()
+                                .stream()
+                                .map(value -> new OnCall(value.name,
+                                                         normalize(value.startTime, calculationOffset),
+                                                         normalize(value.endTime, calculationOffset),
+                                                         value.next))
+                                .collect(Collectors.toList()));
+        }).collect(Collectors.toList());
+
         // compare results
         System.out.println(format(actuals));
-        assertEquals(format(asList(expecteds)), format(actuals));
+        assertEquals(format(expectedsModified), format(actuals));
+    }
+
+    private static Instant normalize(Instant instant, Instant calculationOffset) {
+        return instant.equals(INF) ? calculationOffset.plus(THIRTY_DAYS) : instant;
+    }
+
+    private static ValuedRange<ZonedDateTime, UnaryOperator<List<String>>> asPatch(ValuedRange<Instant, String> override) {
+        Range<Instant> range = override.getRange();
+        return ValuedRange.of(dateRange(range.getStartInclusive(), range.getEndExclusive()),
+                              ignored -> asList(override.getValue()));
     }
 
     private static List<OnCall> getRecipientsWithInterval(Timeline<ZonedDateTime, String> rotations, long millis) {
         ZonedDateTime                          dateTime         = instantToZonedDateTime(Instant.ofEpochMilli(millis));
-        ZonedDateTime                          oneMonthBefore   = dateTime.minus(1, ChronoUnit.MONTHS);
-        ZonedDateTime                          oneMonthAfter    = dateTime.plus(1, ChronoUnit.MONTHS);
+        ZonedDateTime                          oneMonthBefore   = dateTime.minus(THIRTY_DAYS);
+        ZonedDateTime                          oneMonthAfter    = dateTime.plus(THIRTY_DAYS);
         Range<ZonedDateTime>                   calculationRange = Range.of(oneMonthBefore, oneMonthAfter);
         TimelineSegment<ZonedDateTime, String> timeline         = rotations.toSegment(calculationRange);
         List<OnCall>                           oncalls          = new ArrayList<>();
@@ -439,16 +465,15 @@ final class TimelineTest {
     private static void addIfNotNull(List<OnCall> oncalls,
                                      boolean nextOnCall,
                                      ValuedRange<ZonedDateTime, List<String>> valuedRange) {
-        valuedRange.getValue()
-                   .forEach(value -> {
-                       Range<ZonedDateTime> range          = valuedRange.getRange();
-                       ZonedDateTime        startInclusive = range.getStartInclusive();
-                       ZonedDateTime        endExclusive   = range.getEndExclusive();
-                       oncalls.add(new OnCall(value,
-                                              !nextOnCall ? ZERO : startInclusive.toInstant(),
-                                              nextOnCall ? ZERO : endExclusive.toInstant(),
-                                              nextOnCall));
-                   });
+        valuedRange.getValue().forEach(value -> {
+            Range<ZonedDateTime> range          = valuedRange.getRange();
+            ZonedDateTime        startInclusive = range.getStartInclusive();
+            ZonedDateTime        endExclusive   = range.getEndExclusive();
+            oncalls.add(new OnCall(value,
+                                   !nextOnCall ? ZERO : startInclusive.toInstant(),
+                                   nextOnCall ? ZERO : endExclusive.toInstant(),
+                                   nextOnCall));
+        });
     }
 
     private static Entry<Instant, List<OnCall>> expectAt(Instant atTime, OnCall... expecteds) {
@@ -479,7 +504,7 @@ final class TimelineTest {
     }
 
     private static ValuedRange<Instant, String> overrideBetween(Instant startTime, Instant endTime, String name) {
-        return new ValuedRange<>(Range.of(startTime, endTime), name);
+        return ValuedRange.of(Range.of(startTime, endTime), name);
     }
 
     private static Range<Instant> restrictTo(Instant startTime, Instant endTime) {
@@ -524,11 +549,15 @@ final class TimelineTest {
     }
 
     private static Instant min(int minute) {
-        return Instant.ofEpochMilli(TimeUnit.MINUTES.toMillis(minute));
+        return instantOf(minute, TimeUnit.MINUTES);
     }
 
     private static Instant hour(int hour) {
-        return Instant.ofEpochMilli(TimeUnit.HOURS.toMillis(hour));
+        return instantOf(hour, TimeUnit.HOURS);
+    }
+
+    private static Instant instantOf(int amount, TimeUnit unit) {
+        return Instant.ofEpochMilli(unit.toMillis(amount));
     }
 
     private static Range<ZonedDateTime> dateRange(Instant startTime, Instant endTime) {
