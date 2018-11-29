@@ -1,13 +1,11 @@
 package com.github.mmdemirbas.oncalls;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
 
@@ -24,36 +22,42 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
                                                 BiFunction<List<V>, List<A>, List<V>> mergeFunction) {
         TimelineSegment<C, V> result = this;
         for (TimelineSegment<C, A> segment : segments) {
-            List<ValuedRange<C, V>> valuedRanges = new ArrayList<>();
-            List<V>                 values       = emptyList();
-            C                       start        = null;
-            C                       end          = null;
-
-            Set<C> sorted = new TreeSet<>(Comparator.comparing((Function<? super C, ? extends C>) it -> it));
-            sorted.addAll(result.getKeyPoints());
-            sorted.addAll(segment.getKeyPoints());
-
-            for (C point : sorted) {
-                end = point;
-                List<V> mergedValues = mergeFunction.apply(result.findCurrentValues(point),
-                                                           segment.findCurrentValues(point));
-                if (!values.equals(mergedValues)) {
-                    if (!values.isEmpty()) {
-                        Range<C> range = Range.of(start, end);
-                        values.forEach(value -> valuedRanges.add(new ValuedRange<>(range, value)));
-                    }
-                    values = mergedValues;
-                    start = end;
-                }
-            }
-
-            if (!values.isEmpty()) {
-                Range<C> range = Range.of(start, end);
-                values.forEach(value -> valuedRanges.add(new ValuedRange<>(range, value)));
-            }
-            result = newSegment(valuedRanges);
+            result = result.mergeWith(segment, mergeFunction);
         }
         return result;
+    }
+
+    default <A> TimelineSegment<C, V> mergeWith(TimelineSegment<C, A> segment,
+                                                BiFunction<List<V>, List<A>, List<V>> mergeFunction) {
+        List<ValuedRange<C, V>> valuedRanges = new ArrayList<>();
+        List<V>                 values       = emptyList();
+        C                       start        = null;
+        C                       end          = null;
+
+        Set<C> sorted = new TreeSet<>();
+        sorted.addAll(getKeyPoints());
+        sorted.addAll(segment.getKeyPoints());
+
+        // todo: merge & deduplication may be separated
+
+        for (C point : sorted) {
+            end = point;
+            List<V> mergedValues = mergeFunction.apply(findCurrentValues(point), segment.findCurrentValues(point));
+            if (!values.equals(mergedValues)) {
+                if (!values.isEmpty()) {
+                    Range<C> range = Range.of(start, end);
+                    values.forEach(value -> valuedRanges.add(ValuedRange.of(range, value)));
+                }
+                values = mergedValues;
+                start = end;
+            }
+        }
+
+        if (!values.isEmpty()) {
+            Range<C> range = Range.of(start, end);
+            values.forEach(value -> valuedRanges.add(ValuedRange.of(range, value)));
+        }
+        return newSegment(valuedRanges);
     }
 
     /**

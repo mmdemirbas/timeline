@@ -28,8 +28,6 @@ public final class TestUtils {
     }
 
     public static <T, R> List<R> map(Collection<? extends T> items, Function<? super T, ? extends R> mapper) {
-        return items.stream()
-                    .map(mapper)
-                    .collect(Collectors.toList());
+        return items.stream().map(mapper).collect(Collectors.toList());
     }
 }
