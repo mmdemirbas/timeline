@@ -28,6 +28,15 @@ public final class ValuedRange<C extends Comparable<? super C>, V> {
     private final Range<C> range;
     private final V        value;
 
+    public static <C extends Comparable<? super C>, V> ValuedRange<C, V> of(Range<C> range, V value) {
+        return new ValuedRange<>(range, value);
+    }
+
+    private ValuedRange(Range<C> range, V value) {
+        this.range = range;
+        this.value = value;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**

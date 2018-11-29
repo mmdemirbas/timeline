@@ -54,9 +54,9 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
             for (long index = startIndex; index <= endIndex; index++) {
                 V recipient = recipients.get((int) (index % recipients.size()));
                 for (Range<Instant> range : iterationRanges) {
-                    valuedRanges.add(new ValuedRange<>(Range.of(sum(offset, range.getStartInclusive()),
-                                                                sum(offset, range.getEndExclusive()))
-                                                            .intersect(effectiveRange), recipient));
+                    valuedRanges.add(ValuedRange.of(Range.of(sum(offset, range.getStartInclusive()),
+                                                             sum(offset, range.getEndExclusive()))
+                                                         .intersect(effectiveRange), recipient));
                 }
                 offset = offset.plus(iterationDuration);
             }

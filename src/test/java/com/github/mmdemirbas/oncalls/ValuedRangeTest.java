@@ -68,6 +68,6 @@ public final class ValuedRangeTest {
     private static <C extends Comparable<? super C>, V> ValuedRange<C, V> interval(C startInclusive,
                                                                                    C endExclusive,
                                                                                    V value) {
-        return new ValuedRange<>(Range.of(startInclusive, endExclusive), value);
+        return ValuedRange.of(Range.of(startInclusive, endExclusive), value);
     }
 }

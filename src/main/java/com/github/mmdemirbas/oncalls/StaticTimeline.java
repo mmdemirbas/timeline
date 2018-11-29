@@ -76,10 +76,10 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
             C key     = entry.getKey();
             C nextKey = intervalMap.higherKey(key);
             if (nextKey != null) {
-                return new ValuedRange<>(Range.of(key, nextKey), entry.getValue());
+                return ValuedRange.of(Range.of(key, nextKey), entry.getValue());
             }
         }
-        return new ValuedRange(null, emptyList());
+        return ValuedRange.of(null, emptyList());
     }
 
     @Override
