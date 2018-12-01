@@ -61,7 +61,7 @@ final class ComplexRotationsPoCTest {
         Iteration<Integer> threeHours = Iteration.of(3, Range.of(0, 3));
 
         Iterations<Integer> innerSplit = workHours.split(threeHours, 8, (x, y) -> x + y);
-        Iterations<Integer> actual     = weekdays.split(innerSplit, 0, (x, y) -> x + y, 3);
+        Iterations<Integer> actual     = weekdays.split(innerSplit, 0, (x, y) -> x + y);
         Iterations<Integer> expected = Iterations.of(7 * 24,
                                                      ValuedRange.of(Range.of(8, 11), 0),
                                                      ValuedRange.of(Range.of(11, 14), 1),

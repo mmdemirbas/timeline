@@ -22,7 +22,7 @@ import static java.util.Collections.unmodifiableList;
 public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V> {
     // todo: try to split. 4 props are too much!
     private final Range<ZonedDateTime> rotationRange;
-    private final Iteration<Instant>   iteration;
+    private final Iterations<Instant>  iterations;
     private final LongFunction<V>      recipientSupplier;
 
     public ZonedRotationTimeline(Range<ZonedDateTime> rotationRange,
@@ -34,12 +34,12 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
         // todo: write test to show that empty subranges handled
         // todo: write javadoc to explain that empty subranges handled
         List<Range<Instant>> disjointIterationRanges = Range.toDisjointRanges(iterationRanges);
-        iteration = Iteration.of(Instant.ofEpochSecond(0, iterationDuration.toNanos()),
-                                 disjointIterationRanges.isEmpty()
-                                 ? singletonList(Range.of(Instant.EPOCH,
-                                                          Instant.ofEpochSecond(0L,
-                                                                                iterationDuration.toNanos())))
-                                 : disjointIterationRanges);
+        iterations = Iteration.of(Instant.ofEpochSecond(0, iterationDuration.toNanos()),
+                                  disjointIterationRanges.isEmpty()
+                                  ? singletonList(Range.of(Instant.EPOCH,
+                                                           Instant.ofEpochSecond(0L,
+                                                                                 iterationDuration.toNanos())))
+                                  : disjointIterationRanges).toIterations();
 
         List<V> recipientsList = unmodifiableList(new ArrayList<>(recipients));
         recipientSupplier = index -> recipientsList.get((int) (index % recipientsList.size()));
@@ -47,23 +47,28 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
 
     @Override
     public TimelineSegment<ZonedDateTime, V> toSegment(Range<ZonedDateTime> calculationRange) {
-        List<ValuedRange<ZonedDateTime, V>> valuedRanges        = new ArrayList<>();
-        Range<ZonedDateTime>                effectiveRange      = rotationRange.intersect(calculationRange);
-        long                                startIndex          = indexOfIterationAt(effectiveRange.getStartInclusive());
-        long                                endIndex            = indexOfIterationAt(effectiveRange.getEndExclusive());
-        ZonedDateTime                       rotationStart       = rotationRange.getStartInclusive();
-        Instant                             iterationDuration   = iteration.getDuration();
-        long                                iterationStartNanos = nanosOf(iterationDuration) * startIndex;
-        ZonedDateTime                       offset              = addNanos(rotationStart, iterationStartNanos);
+        List<ValuedRange<ZonedDateTime, V>> valuedRanges         = new ArrayList<>();
+        Range<ZonedDateTime>                effectiveRange       = rotationRange.intersect(calculationRange);
+        long                                startIndex           = indexOfIterationAt(effectiveRange.getStartInclusive());
+        long                                endIndex             = indexOfIterationAt(effectiveRange.getEndExclusive());
+        ZonedDateTime                       rotationStart        = rotationRange.getStartInclusive();
+        Instant                             iterationDuration    = iterations.getDuration();
+        long                                iterationStartNanos  = nanosOf(iterationDuration) * startIndex;
+        ZonedDateTime                       rangeOffset          = addNanos(rotationStart, iterationStartNanos);
+        long                                uniqueIterationCount = iterations.findUniqueIterationCount();
+        long                                indexOffset          = uniqueIterationCount * startIndex;
 
         for (long index = startIndex; index <= endIndex; index++) {
-            V recipient = recipientSupplier.apply(index);
-            for (Range<Instant> range : iteration.getRanges()) {
-                valuedRanges.add(ValuedRange.of(Range.of(add(offset, range.getStartInclusive()),
-                                                         add(offset, range.getEndExclusive()))
+            for (ValuedRange<Instant, Integer> valuedRange : iterations.getRanges()) {
+                Range<Instant> range          = valuedRange.getRange();
+                long           recipientIndex = indexOffset + valuedRange.getValue();
+                V              recipient      = recipientSupplier.apply(recipientIndex);
+                valuedRanges.add(ValuedRange.of(Range.of(add(rangeOffset, range.getStartInclusive()),
+                                                         add(rangeOffset, range.getEndExclusive()))
                                                      .intersect(effectiveRange), recipient));
             }
-            offset = add(offset, iterationDuration);
+            rangeOffset = add(rangeOffset, iterationDuration);
+            indexOffset += uniqueIterationCount;
         }
         return StaticTimeline.ofIntervals(valuedRanges);
     }
@@ -71,7 +76,7 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
     private long indexOfIterationAt(ZonedDateTime point) {
         ZonedDateTime rotationStart   = rotationRange.getStartInclusive();
         Duration      elapsedDuration = Duration.between(rotationStart, point);
-        return elapsedDuration.toNanos() / nanosOf(iteration.getDuration());
+        return elapsedDuration.toNanos() / nanosOf(iterations.getDuration());
     }
 
     private static ZonedDateTime add(ZonedDateTime offset, Instant instant) {

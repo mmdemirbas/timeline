@@ -43,17 +43,14 @@ public final class Iteration<C extends Comparable<? super C>> {
     }
 
     public Iterations<C> split(Iteration<C> unit, C offset, BinaryOperator<C> sum) {
-        return split(unit.toIterations(), offset, sum, 1);
+        return split(unit.toIterations(), offset, sum);
     }
 
-    public Iterations<C> split(Iterations<C> units,
-                               C startOffset,
-                               BinaryOperator<C> sum,
-                               int incrementIterationIndexPerUnit) {
-        C                             unitDuration = units.getDuration();
-        List<ValuedRange<C, Integer>> iterations   = new ArrayList<>();
-
-        int valueOffset = 0;
+    public Iterations<C> split(Iterations<C> units, C startOffset, BinaryOperator<C> sum) {
+        C                             unitDuration         = units.getDuration();
+        List<ValuedRange<C, Integer>> iterations           = new ArrayList<>();
+        int                           valueOffset          = 0;
+        long                          uniqueIterationCount = units.findUniqueIterationCount();
 
         while (startOffset.compareTo(duration) < 0) {
             for (ValuedRange<C, Integer> unit : units.getRanges()) {
@@ -68,7 +65,7 @@ public final class Iteration<C extends Comparable<? super C>> {
                     }
                 }
             }
-            valueOffset += incrementIterationIndexPerUnit;
+            valueOffset += uniqueIterationCount;
             startOffset = sum.apply(startOffset, unitDuration);
         }
 

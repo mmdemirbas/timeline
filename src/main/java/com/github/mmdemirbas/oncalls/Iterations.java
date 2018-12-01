@@ -51,4 +51,8 @@ final class Iterations<C extends Comparable<? super C>> {
         union.addAll(other.ranges);
         return of(duration, union);
     }
+
+    public long findUniqueIterationCount() {
+        return ranges.stream().map(it -> it.getValue()).distinct().count();
+    }
 }
