@@ -15,7 +15,7 @@ import static java.util.Arrays.asList;
 @Value
 final class Iterations<C extends Comparable<? super C>> {
     private final C                             duration;
-    private final List<ValuedRange<C, Integer>> ranges;
+    private final List<ValuedRange<C, Integer>> ranges; // todo: ensure immutability
 
     @SafeVarargs
     public static <C extends Comparable<? super C>> Iterations<C> of(C duration,
@@ -31,6 +31,8 @@ final class Iterations<C extends Comparable<? super C>> {
     private Iterations(C duration, List<ValuedRange<C, Integer>> ranges) {
         this.duration = duration;
         this.ranges = ranges;
+
+        // todo: make ranges disjoint
 
         C maxSubrangeEnd = ranges.stream()
                                  .map(it -> it.getRange().getEndExclusive())

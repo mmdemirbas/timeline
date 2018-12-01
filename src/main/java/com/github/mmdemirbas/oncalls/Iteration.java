@@ -3,6 +3,7 @@ package com.github.mmdemirbas.oncalls;
 import lombok.Value;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.BinaryOperator;
@@ -17,7 +18,7 @@ import static java.util.Arrays.asList;
 @Value
 public final class Iteration<C extends Comparable<? super C>> {
     private final C              duration;
-    private final List<Range<C>> ranges;
+    private final List<Range<C>> ranges; // todo: ensure immutability
 
     @SafeVarargs
     public static <C extends Comparable<? super C>> Iteration<C> of(C duration, Range<C>... ranges) {
@@ -28,7 +29,7 @@ public final class Iteration<C extends Comparable<? super C>> {
         return new Iteration<C>(duration, subRanges);
     }
 
-    private Iteration(C duration, List<Range<C>> ranges) {
+    private Iteration(C duration, Collection<Range<C>> ranges) {
         this.duration = duration;
         this.ranges = Range.toDisjointRanges(ranges);
 
