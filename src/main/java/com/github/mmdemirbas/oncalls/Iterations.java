@@ -15,7 +15,7 @@ import static java.util.Arrays.asList;
 @Value
 final class Iterations<C extends Comparable<? super C>> {
     private final C                             duration;
-    private final List<ValuedRange<C, Integer>> iterations;
+    private final List<ValuedRange<C, Integer>> ranges;
 
     @SafeVarargs
     public static <C extends Comparable<? super C>> Iterations<C> of(C duration,
@@ -28,14 +28,14 @@ final class Iterations<C extends Comparable<? super C>> {
         return new Iterations<>(duration, iterations);
     }
 
-    private Iterations(C duration, List<ValuedRange<C, Integer>> iterations) {
+    private Iterations(C duration, List<ValuedRange<C, Integer>> ranges) {
         this.duration = duration;
-        this.iterations = iterations;
+        this.ranges = ranges;
 
-        C maxSubrangeEnd = iterations.stream()
-                                     .map(it -> it.getRange().getEndExclusive())
-                                     .max(Comparator.naturalOrder())
-                                     .orElse(null);
+        C maxSubrangeEnd = ranges.stream()
+                                 .map(it -> it.getRange().getEndExclusive())
+                                 .max(Comparator.naturalOrder())
+                                 .orElse(null);
         if (maxSubrangeEnd == null) {
             throw new NullPointerException("Iteration has no sub-ranges.");
         } else if (duration.compareTo(maxSubrangeEnd) < 0) {
@@ -47,8 +47,8 @@ final class Iterations<C extends Comparable<? super C>> {
         // todo: assumed that durations are same
         // todo: assumed that ranges doesn't intersect. Result should be a list of iteration indices instead of a single index.
         List<ValuedRange<C, Integer>> union = new ArrayList<>();
-        union.addAll(iterations);
-        union.addAll(other.iterations);
+        union.addAll(ranges);
+        union.addAll(other.ranges);
         return of(duration, union);
     }
 }

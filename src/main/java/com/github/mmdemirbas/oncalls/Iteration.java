@@ -17,7 +17,7 @@ import static java.util.Arrays.asList;
 @Value
 public final class Iteration<C extends Comparable<? super C>> {
     private final C              duration;
-    private final List<Range<C>> subRanges;
+    private final List<Range<C>> ranges;
 
     @SafeVarargs
     public static <C extends Comparable<? super C>> Iteration<C> of(C duration, Range<C>... ranges) {
@@ -28,11 +28,11 @@ public final class Iteration<C extends Comparable<? super C>> {
         return new Iteration<C>(duration, subRanges);
     }
 
-    private Iteration(C duration, List<Range<C>> subRanges) {
+    private Iteration(C duration, List<Range<C>> ranges) {
         this.duration = duration;
-        this.subRanges = Range.toDisjointRanges(subRanges);
+        this.ranges = Range.toDisjointRanges(ranges);
 
-        C max = this.subRanges.stream().map(it -> it.getEndExclusive()).max(Comparator.naturalOrder()).orElse(null);
+        C max = this.ranges.stream().map(it -> it.getEndExclusive()).max(Comparator.naturalOrder()).orElse(null);
 
         if (duration.compareTo(max) < 0) {
             throw new RuntimeException(String.format(
@@ -56,11 +56,11 @@ public final class Iteration<C extends Comparable<? super C>> {
         int valueOffset = 0;
 
         while (startOffset.compareTo(duration) < 0) {
-            for (ValuedRange<C, Integer> unit : units.getIterations()) {
+            for (ValuedRange<C, Integer> unit : units.getRanges()) {
                 Range<C> range = unit.getRange();
                 Integer  value = unit.getValue();
 
-                for (Range<C> subRange : subRanges) {
+                for (Range<C> subRange : ranges) {
                     Range<C> intersect = Range.of(sum.apply(startOffset, range.getStartInclusive()),
                                                   sum.apply(startOffset, range.getEndExclusive())).intersect(subRange);
                     if (!intersect.isEmpty()) {
@@ -77,6 +77,6 @@ public final class Iteration<C extends Comparable<? super C>> {
 
     public Iterations<C> toIterations() {
         return Iterations.of(duration,
-                             subRanges.stream().map(range -> ValuedRange.of(range, 0)).collect(Collectors.toList()));
+                             ranges.stream().map(range -> ValuedRange.of(range, 0)).collect(Collectors.toList()));
     }
 }

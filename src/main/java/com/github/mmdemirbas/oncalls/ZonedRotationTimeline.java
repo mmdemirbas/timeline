@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongFunction;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
@@ -22,7 +23,7 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
     // todo: try to split. 4 props are too much!
     private final Range<ZonedDateTime> rotationRange;
     private final Iteration<Instant>   iteration;
-    private final List<V>              recipients;
+    private final LongFunction<V>      recipientSupplier;
 
     public ZonedRotationTimeline(Range<ZonedDateTime> rotationRange,
                                  Duration iterationDuration,
@@ -39,29 +40,30 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
                                                           Instant.ofEpochSecond(0L,
                                                                                 iterationDuration.toNanos())))
                                  : disjointIterationRanges);
-        this.recipients = unmodifiableList(new ArrayList<>(recipients));
+
+        List<V> recipientsList = unmodifiableList(new ArrayList<>(recipients));
+        recipientSupplier = index -> recipientsList.get((int) (index % recipientsList.size()));
     }
 
     @Override
     public TimelineSegment<ZonedDateTime, V> toSegment(Range<ZonedDateTime> calculationRange) {
-        List<ValuedRange<ZonedDateTime, V>> valuedRanges = new ArrayList<>();
-        if (!recipients.isEmpty()) {
-            Range<ZonedDateTime> effectiveRange    = rotationRange.intersect(calculationRange);
-            long                 startIndex        = indexOfIterationAt(effectiveRange.getStartInclusive());
-            long                 endIndex          = indexOfIterationAt(effectiveRange.getEndExclusive());
-            ZonedDateTime        rotationStart     = rotationRange.getStartInclusive();
-            Instant              iterationDuration = iteration.getDuration();
-            ZonedDateTime        offset            = addNanos(rotationStart, nanosOf(iterationDuration) * startIndex);
+        List<ValuedRange<ZonedDateTime, V>> valuedRanges        = new ArrayList<>();
+        Range<ZonedDateTime>                effectiveRange      = rotationRange.intersect(calculationRange);
+        long                                startIndex          = indexOfIterationAt(effectiveRange.getStartInclusive());
+        long                                endIndex            = indexOfIterationAt(effectiveRange.getEndExclusive());
+        ZonedDateTime                       rotationStart       = rotationRange.getStartInclusive();
+        Instant                             iterationDuration   = iteration.getDuration();
+        long                                iterationStartNanos = nanosOf(iterationDuration) * startIndex;
+        ZonedDateTime                       offset              = addNanos(rotationStart, iterationStartNanos);
 
-            for (long index = startIndex; index <= endIndex; index++) {
-                V recipient = recipients.get((int) (index % recipients.size()));
-                for (Range<Instant> range : iteration.getSubRanges()) {
-                    valuedRanges.add(ValuedRange.of(Range.of(addNanos(offset, range.getStartInclusive()),
-                                                             addNanos(offset, range.getEndExclusive()))
-                                                         .intersect(effectiveRange), recipient));
-                }
-                offset = addNanos(offset, iterationDuration);
+        for (long index = startIndex; index <= endIndex; index++) {
+            V recipient = recipientSupplier.apply(index);
+            for (Range<Instant> range : iteration.getRanges()) {
+                valuedRanges.add(ValuedRange.of(Range.of(add(offset, range.getStartInclusive()),
+                                                         add(offset, range.getEndExclusive()))
+                                                     .intersect(effectiveRange), recipient));
             }
+            offset = add(offset, iterationDuration);
         }
         return StaticTimeline.ofIntervals(valuedRanges);
     }
@@ -72,7 +74,7 @@ public final class ZonedRotationTimeline<V> implements Timeline<ZonedDateTime, V
         return elapsedDuration.toNanos() / nanosOf(iteration.getDuration());
     }
 
-    private static ZonedDateTime addNanos(ZonedDateTime offset, Instant instant) {
+    private static ZonedDateTime add(ZonedDateTime offset, Instant instant) {
         return addNanos(offset, nanosOf(instant));
     }
 
