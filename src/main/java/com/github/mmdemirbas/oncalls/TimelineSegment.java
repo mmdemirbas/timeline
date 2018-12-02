@@ -34,10 +34,10 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
         requireNonNull(segment, "segment");
         requireNonNull(mergeFunction, "mergeFunction");
 
-        List<ValuedRange<C, V>> valuedRanges = new ArrayList<>();
-        List<V>                 values       = emptyList();
-        C                       start        = null;
-        C                       end          = null;
+        List<ValuedRange<C, V>> intervals = new ArrayList<>();
+        List<V>                 values    = emptyList();
+        C                       start     = null;
+        C                       end       = null;
 
         Set<C> sorted = new TreeSet<>();
         sorted.addAll(getKeyPoints());
@@ -53,7 +53,7 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
             if (!values.equals(mergedValues)) {
                 if (!values.isEmpty()) {
                     Range<C> range = Range.of(start, end);
-                    values.forEach(value -> valuedRanges.add(ValuedRange.of(range, value)));
+                    values.forEach(value -> intervals.add(ValuedRange.of(range, value)));
                 }
                 values = mergedValues;
                 start = end;
@@ -62,15 +62,15 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
 
         if (!values.isEmpty()) {
             Range<C> range = Range.of(start, end);
-            values.forEach(value -> valuedRanges.add(ValuedRange.of(range, value)));
+            values.forEach(value -> intervals.add(ValuedRange.of(range, value)));
         }
-        return newSegment(valuedRanges);
+        return newSegment(intervals);
     }
 
     /**
-     * Creates a new {@link TimelineSegment} instance from the given {@code valuedRanges}.
+     * Creates a new {@link TimelineSegment} instance from the given {@code intervals}.
      */
-    TimelineSegment<C, V> newSegment(List<ValuedRange<C, V>> valuedRanges);
+    TimelineSegment<C, V> newSegment(List<ValuedRange<C, V>> intervals);
 
     /**
      * Returns a set of change points. In other words all start and end points of sub-intervals.

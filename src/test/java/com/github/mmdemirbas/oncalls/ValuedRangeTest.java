@@ -2,6 +2,7 @@ package com.github.mmdemirbas.oncalls;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -67,8 +68,8 @@ final class ValuedRangeTest {
     }
 
     private static void assertIntervalMap(Map<Integer, List<String>> expected,
-                                          List<ValuedRange<Integer, String>> valuedRanges) {
-        assertEquals(expected, ValuedRange.buildIntervalMap(valuedRanges));
+                                          Collection<ValuedRange<Integer, String>> intervals) {
+        assertEquals(expected, ValuedRange.buildIntervalMap(intervals));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

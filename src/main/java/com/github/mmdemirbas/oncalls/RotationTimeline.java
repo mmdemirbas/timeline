@@ -33,7 +33,6 @@ public abstract class RotationTimeline<C extends Comparable<? super C>, U extend
         long     uniqueIterationCount = iterations.findUniqueIterationCount();
         long     indexOffset          = uniqueIterationCount * startIndex;
 
-        // todo: rename other valuedRanges to intervals
         List<ValuedRange<C, V>> intervals = new ArrayList<>();
         for (long index = startIndex; index <= endIndex; index++) {
             for (ValuedRange<U, Integer> valuedRange : iterations.getRanges()) {

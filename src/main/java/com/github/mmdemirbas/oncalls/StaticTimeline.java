@@ -50,8 +50,8 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
     }
 
     @Override
-    public TimelineSegment<C, V> newSegment(List<ValuedRange<C, V>> valuedRanges) {
-        return ofIntervals(valuedRanges);
+    public TimelineSegment<C, V> newSegment(List<ValuedRange<C, V>> intervals) {
+        return ofIntervals(intervals);
     }
 
     @Override
