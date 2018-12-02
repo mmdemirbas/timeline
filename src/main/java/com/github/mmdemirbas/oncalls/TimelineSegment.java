@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 
+import static com.github.mmdemirbas.oncalls.Utils.orEmpty;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
@@ -46,7 +47,9 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
 
         for (C point : sorted) {
             end = point;
-            List<V> mergedValues = mergeFunction.apply(findCurrentValues(point), segment.findCurrentValues(point));
+            List<V> myValues     = findCurrentValues(point);
+            List<A> theirValues  = segment.findCurrentValues(point);
+            List<V> mergedValues = mergeFunction.apply(orEmpty(myValues), orEmpty(theirValues));
             if (!values.equals(mergedValues)) {
                 if (!values.isEmpty()) {
                     Range<C> range = Range.of(start, end);

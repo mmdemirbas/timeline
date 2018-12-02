@@ -62,20 +62,21 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
 
     @Override
     public List<V> findCurrentValues(C point) {
-        return findCurrentInterval(point).getValue();
+        ValuedRange<C, List<V>> interval = findCurrentInterval(point);
+        return (interval == null) ? null : interval.getValue();
     }
 
     @Override
     public ValuedRange<C, List<V>> findCurrentInterval(C point) {
-        return getValuesOrEmpty(intervalMap.floorEntry(point));
+        return getValuesOrNull(intervalMap.floorEntry(point));
     }
 
     @Override
     public ValuedRange<C, List<V>> findNextInterval(C point) {
-        return getValuesOrEmpty(intervalMap.higherEntry(point));
+        return getValuesOrNull(intervalMap.higherEntry(point));
     }
 
-    private ValuedRange<C, List<V>> getValuesOrEmpty(Entry<C, List<V>> entry) {
+    private ValuedRange<C, List<V>> getValuesOrNull(Entry<C, List<V>> entry) {
         if (entry != null) {
             C key     = entry.getKey();
             C nextKey = intervalMap.higherKey(key);
@@ -83,7 +84,7 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
                 return ValuedRange.of(Range.of(key, nextKey), entry.getValue());
             }
         }
-        return ValuedRange.of(null, emptyList());
+        return null;
     }
 
     @Override

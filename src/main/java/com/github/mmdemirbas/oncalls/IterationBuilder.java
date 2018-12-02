@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -26,8 +27,10 @@ public final class IterationBuilder<C extends Comparable<? super C>> {
         return iteration;
     }
 
-    public Iterations<C> split(Iteration<C> unit, C startOffset, Consumer<IterationBuilder<C>> modify) {
-        return split(modify(unit, modify), startOffset);
+    public Iterations<C> split(Iteration<C> unit, C startOffset, Function<IterationBuilder<C>, Iterations<C>> build) {
+        IterationBuilder<C> builder  = unit.newBuilder(sum);
+        Iterations<C>       modified = build.apply(builder);
+        return split(modified, startOffset);
     }
 
     public Iterations<C> split(Iteration<C> unit, C startOffset) {
@@ -76,7 +79,9 @@ public final class IterationBuilder<C extends Comparable<? super C>> {
     }
 
     public IterationBuilder<C> concat(Iteration<C> other, Consumer<IterationBuilder<C>> modify) {
-        return concat(modify(other, modify));
+        IterationBuilder<C> builder = other.newBuilder(sum);
+        modify.accept(builder);
+        return concat(builder.iteration);
     }
 
     public IterationBuilder<C> concat(Iteration<C> other) {

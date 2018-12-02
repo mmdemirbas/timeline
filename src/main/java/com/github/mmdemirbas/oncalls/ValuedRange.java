@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 
-import static java.util.Collections.emptyList;
+import static com.github.mmdemirbas.oncalls.Utils.orEmpty;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableNavigableMap;
 import static java.util.Objects.requireNonNull;
@@ -35,7 +35,7 @@ public final class ValuedRange<C extends Comparable<? super C>, V> {
     }
 
     private ValuedRange(Range<C> range, V value) {
-        this.range = requireNonNull(range);
+        this.range = requireNonNull(range, "range");
         this.value = value;
     }
 
@@ -85,7 +85,4 @@ public final class ValuedRange<C extends Comparable<? super C>, V> {
         return index;
     }
 
-    private static <V> List<V> orEmpty(List<V> list) {
-        return (list == null) ? emptyList() : list;
-    }
 }

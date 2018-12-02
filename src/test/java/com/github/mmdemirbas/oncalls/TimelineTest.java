@@ -464,17 +464,18 @@ final class TimelineTest {
     }
 
     private static void addIfNotNull(List<OnCall> oncalls,
-                                     boolean nextOnCall,
-                                     ValuedRange<ZonedDateTime, List<String>> valuedRange) {
-        valuedRange.getValue().forEach(value -> {
-            Range<ZonedDateTime> range          = valuedRange.getRange();
-            ZonedDateTime        startInclusive = range.getStartInclusive();
-            ZonedDateTime        endExclusive   = range.getEndExclusive();
-            oncalls.add(new OnCall(value,
-                                   !nextOnCall ? ZERO : startInclusive.toInstant(),
-                                   nextOnCall ? ZERO : endExclusive.toInstant(),
-                                   nextOnCall));
-        });
+                                     boolean nextOnCall, ValuedRange<ZonedDateTime, List<String>> interval) {
+        if (interval != null) {
+            interval.getValue().forEach(value -> {
+                Range<ZonedDateTime> range          = interval.getRange();
+                ZonedDateTime        startInclusive = range.getStartInclusive();
+                ZonedDateTime        endExclusive   = range.getEndExclusive();
+                oncalls.add(new OnCall(value,
+                                       !nextOnCall ? ZERO : startInclusive.toInstant(),
+                                       nextOnCall ? ZERO : endExclusive.toInstant(),
+                                       nextOnCall));
+            });
+        }
     }
 
     private static Entry<Instant, List<OnCall>> expectAt(Instant atTime, OnCall... expecteds) {
