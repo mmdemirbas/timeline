@@ -12,7 +12,6 @@ import java.util.List;
  */
 public abstract class RotationTimeline<C extends Comparable<? super C>, U extends Comparable<? super U>, V> implements
                                                                                                             Timeline<C, V> {
-    // todo: try to split. 4 props are too much!
     private final Range<C>      rotationRange;
     private final Iterations<U> iterations;
 
@@ -36,9 +35,8 @@ public abstract class RotationTimeline<C extends Comparable<? super C>, U extend
                 Range<U> range          = valuedRange.getRange();
                 long     recipientIndex = indexOffset + valuedRange.getValue();
                 V        recipient      = recipientAtIndex(recipientIndex);
-                valuedRanges.add(ValuedRange.of(Range.of(add(rangeOffset, range.getStartInclusive()),
-                                                         add(rangeOffset, range.getEndExclusive()))
-                                                     .intersect(effectiveRange), recipient));
+                valuedRanges.add(ValuedRange.of(range.map(this::add, rangeOffset).intersect(effectiveRange),
+                                                recipient));
             }
             rangeOffset = add(rangeOffset, iterations.getDuration());
             indexOffset += uniqueIterationCount;

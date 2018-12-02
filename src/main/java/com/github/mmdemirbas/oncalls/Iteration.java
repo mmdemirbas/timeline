@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
+// todo: remove author header if removed from everywhere
+
 /**
  * @author Muhammed Demirbaş
  * @since 2018-12-01 16:04
@@ -18,7 +20,7 @@ import static java.util.Arrays.asList;
 @Value
 public final class Iteration<C extends Comparable<? super C>> {
     private final C              duration;
-    private final List<Range<C>> ranges; // todo: ensure immutability
+    private final List<Range<C>> ranges; // todo: write immutability tests for all classes
 
     @SafeVarargs
     public static <C extends Comparable<? super C>> Iteration<C> of(C duration, Range<C>... ranges) {
@@ -26,15 +28,17 @@ public final class Iteration<C extends Comparable<? super C>> {
     }
 
     public static <C extends Comparable<? super C>> Iteration<C> of(C duration, List<Range<C>> subRanges) {
-        return new Iteration<C>(duration, subRanges);
+        return new Iteration<>(duration, subRanges);
     }
 
     private Iteration(C duration, Collection<Range<C>> ranges) {
         this.duration = duration;
         this.ranges = Range.toDisjointRanges(ranges);
 
-        C max = this.ranges.stream().map(it -> it.getEndExclusive()).max(Comparator.naturalOrder()).orElse(null);
-
+        C max = ranges.stream().map(Range::getEndExclusive).max(Comparator.naturalOrder()).orElse(null);
+        if (max == null) {
+            throw new NullPointerException("Iteration has no sub-ranges.");
+        }
         if (duration.compareTo(max) < 0) {
             throw new RuntimeException(String.format(
                     "Sub-ranges exceed the iteration duration. Iteration duration was: %s, sub-ranges ends at: %s",
@@ -59,8 +63,7 @@ public final class Iteration<C extends Comparable<? super C>> {
                 Integer  value = unit.getValue();
 
                 for (Range<C> subRange : ranges) {
-                    Range<C> intersect = Range.of(sum.apply(startOffset, range.getStartInclusive()),
-                                                  sum.apply(startOffset, range.getEndExclusive())).intersect(subRange);
+                    Range<C> intersect = range.map(sum, startOffset).intersect(subRange);
                     if (!intersect.isEmpty()) {
                         iterations.add(ValuedRange.of(intersect, valueOffset + value));
                     }
@@ -76,5 +79,27 @@ public final class Iteration<C extends Comparable<? super C>> {
     public Iterations<C> toIterations() {
         return Iterations.of(duration,
                              ranges.stream().map(range -> ValuedRange.of(range, 0)).collect(Collectors.toList()));
+    }
+
+    public Iteration<C> multiply(int count, BinaryOperator<C> sum) {
+        if (count < 1)
+            throw new RuntimeException("count must be >= 1, but was: " + count);
+
+        Iteration<C> result = this;
+        for (int i = 1; i < count; i++) {
+            result = result.concat(this, sum);
+        }
+        return result;
+    }
+
+    public Iteration<C> concat(Iteration<C> other, BinaryOperator<C> sum) {
+        C              totalDuration  = sum.apply(duration, other.duration);
+        List<Range<C>> appendedRanges = new ArrayList<>(ranges);
+        appendedRanges.addAll(other.rangesWithOffset(duration, sum));
+        return of(totalDuration, appendedRanges);
+    }
+
+    private List<Range<C>> rangesWithOffset(C offset, BinaryOperator<C> sum) {
+        return ranges.stream().map(range -> range.map(sum, offset)).collect(Collectors.toList());
     }
 }

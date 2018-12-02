@@ -2,7 +2,6 @@ package com.github.mmdemirbas.oncalls;
 
 import lombok.Value;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -34,24 +33,13 @@ final class Iterations<C extends Comparable<? super C>> {
 
         // todo: make ranges disjoint
 
-        C maxSubrangeEnd = ranges.stream()
-                                 .map(it -> it.getRange().getEndExclusive())
-                                 .max(Comparator.naturalOrder())
-                                 .orElse(null);
-        if (maxSubrangeEnd == null) {
+        C max = ranges.stream().map(it -> it.getRange().getEndExclusive()).max(Comparator.naturalOrder()).orElse(null);
+        if (max == null) {
             throw new NullPointerException("Iteration has no sub-ranges.");
-        } else if (duration.compareTo(maxSubrangeEnd) < 0) {
+        }
+        if (duration.compareTo(max) < 0) {
             throw new RuntimeException("Iteration duration couldn't be smaller than sub-ranges.");
         }
-    }
-
-    public Iterations<C> union(Iterations<C> other) {
-        // todo: assumed that durations are same
-        // todo: assumed that ranges doesn't intersect. Result should be a list of iteration indices instead of a single index.
-        List<ValuedRange<C, Integer>> union = new ArrayList<>();
-        union.addAll(ranges);
-        union.addAll(other.ranges);
-        return of(duration, union);
     }
 
     public long findUniqueIterationCount() {

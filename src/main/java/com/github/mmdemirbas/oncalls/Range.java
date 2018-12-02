@@ -59,6 +59,16 @@ public final class Range<C extends Comparable<? super C>> {
         return startInclusive.compareTo(endExclusive) == 0;
     }
 
+    public <U, R extends Comparable<? super R>> Range<R> map(BiFunction<? super U, ? super C, ? extends R> mapper,
+                                                             U firstArg) {
+        return map(c -> mapper.apply(firstArg, c));
+    }
+
+    public <R extends Comparable<? super R>> Range<R> map(Function<? super C, ? extends R> mapper) {
+        // todo: write test
+        return of(mapper.apply(startInclusive), mapper.apply(endExclusive));
+    }
+
     /**
      * Returns intersection of this range with the given range.
      */
@@ -104,12 +114,12 @@ public final class Range<C extends Comparable<? super C>> {
         R       joiningItem    = null;
 
         List<R> sorted = new ArrayList<>(items);
-        sorted.sort(Comparator.comparing(r -> getRange.apply(r).getStartInclusive()));
+        sorted.sort(Comparator.comparing(r -> getRange.apply(r).startInclusive));
 
         for (R item : sorted) {
             Range<C> range    = getRange.apply(item);
-            C        newStart = range.getStartInclusive();
-            C        newEnd   = range.getEndExclusive();
+            C        newStart = range.startInclusive;
+            C        newEnd   = range.endExclusive;
 
             if ((end == null) || (end.compareTo(newStart) < 0) || !canJoinIfSuccessive.test(item, joiningItem)) {
                 addRange(disjointRanges, start, end, create, joiningItem);
