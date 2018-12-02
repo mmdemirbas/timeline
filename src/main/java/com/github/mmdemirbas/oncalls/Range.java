@@ -45,10 +45,10 @@ public final class Range<C extends Comparable<? super C>> {
         this.startInclusive = requireNonNull(startInclusive, "startInclusive");
         this.endExclusive = requireNonNull(endExclusive, "endExclusive");
 
-        if (startInclusive.compareTo(endExclusive) > 0) {
-            throw new IllegalArgumentException(String.format("must be start <= end, but was: %s > %s",
-                                                             startInclusive,
-                                                             endExclusive));
+        if (endExclusive.compareTo(startInclusive) < 0) {
+            throw new IllegalArgumentException(String.format("end was smaller then start: %s < %s",
+                                                             endExclusive,
+                                                             startInclusive));
         }
     }
 
