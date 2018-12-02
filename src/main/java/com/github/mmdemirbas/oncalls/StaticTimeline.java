@@ -24,6 +24,7 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
     }
 
     private StaticTimeline(NavigableMap<C, List<V>> intervalMap) {
+        // todo: ensure inner lists also immutable -- may be extracted to a unmodifiableCopyOf() utility method
         this.intervalMap = unmodifiableNavigableMap(requireNonNull(intervalMap, "intervalMap"));
     }
 

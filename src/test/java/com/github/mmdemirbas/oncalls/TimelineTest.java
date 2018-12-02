@@ -410,8 +410,8 @@ final class TimelineTest {
                                          List<Timeline<ZonedDateTime, String>> rotations,
                                          List<ValuedRange<Instant, String>> overrides,
                                          Entry<Instant, List<OnCall>>... expecteds) {
-        Timeline<ZonedDateTime, String> snapshot = new PatchedTimeline<>(new UnionTimeline<>(rotations),
-                                                                         asList(StaticTimeline.ofIntervals(map(overrides,
+        Timeline<ZonedDateTime, String> snapshot = PatchedTimeline.of(UnionTimeline.of(rotations),
+                                                                      asList(StaticTimeline.ofIntervals(map(overrides,
                                                                                                                TimelineTest::asPatch))));
 
         // execute the method
@@ -464,7 +464,8 @@ final class TimelineTest {
     }
 
     private static void addIfNotNull(List<OnCall> oncalls,
-                                     boolean nextOnCall, ValuedRange<ZonedDateTime, List<String>> interval) {
+                                     boolean nextOnCall,
+                                     ValuedRange<ZonedDateTime, List<String>> interval) {
         if (interval != null) {
             interval.getValue().forEach(value -> {
                 Range<ZonedDateTime> range          = interval.getRange();

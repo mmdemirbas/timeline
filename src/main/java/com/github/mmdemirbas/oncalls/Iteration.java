@@ -13,7 +13,7 @@ import static java.util.Objects.requireNonNull;
 @Value
 public final class Iteration<C extends Comparable<? super C>> {
     private final C              duration;
-    private final List<Range<C>> ranges; // todo: write immutability tests for all classes
+    private final List<Range<C>> ranges;
 
     @SafeVarargs
     public static <C extends Comparable<? super C>> Iteration<C> of(C duration, Range<C>... ranges) {

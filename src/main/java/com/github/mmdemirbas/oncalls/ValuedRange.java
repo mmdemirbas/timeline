@@ -13,7 +13,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 
 import static com.github.mmdemirbas.oncalls.Utils.orEmpty;
-import static java.util.Collections.unmodifiableList;
+import static com.github.mmdemirbas.oncalls.Utils.unmodifiableCopyOf;
 import static java.util.Collections.unmodifiableNavigableMap;
 import static java.util.Objects.requireNonNull;
 
@@ -67,7 +67,7 @@ public final class ValuedRange<C extends Comparable<? super C>, V> {
         sorted.forEach(point -> {
             ongoingEvents.addAll(orEmpty(add.get(point)));
             ongoingEvents.removeAll(orEmpty(remove.get(point)));
-            intervalMap.put(point, unmodifiableList(new ArrayList<>(ongoingEvents)));
+            intervalMap.put(point, unmodifiableCopyOf(ongoingEvents));
         });
         return unmodifiableNavigableMap(intervalMap);
     }

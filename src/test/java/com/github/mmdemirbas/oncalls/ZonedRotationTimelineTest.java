@@ -15,6 +15,25 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class ZonedRotationTimelineTest {
+    @Test
+    void immutability() {
+        List<String> recipients = new ArrayList<>(asList("0", "1", "2"));
+        ZonedRotationTimeline<String> timeline = new ZonedRotationTimeline<>(range(0, 100),
+                                                                             iteration(10, subrange(1, 2)),
+                                                                             recipients);
+
+        assertEquals("0", timeline.recipientAtIndex(0));
+        assertEquals("1", timeline.recipientAtIndex(1));
+        assertEquals("2", timeline.recipientAtIndex(2));
+
+        recipients.clear();
+
+        assertEquals("0", timeline.recipientAtIndex(0));
+        assertEquals("1", timeline.recipientAtIndex(1));
+        assertEquals("2", timeline.recipientAtIndex(2));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Test
     void toTimeline_SimplestCase() {
