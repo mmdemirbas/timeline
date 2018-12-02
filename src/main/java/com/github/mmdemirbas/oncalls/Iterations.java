@@ -10,10 +10,6 @@ import java.util.function.Function;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
-/**
- * @author Muhammed Demirbaş
- * @since 2018-12-01 16:04
- */
 @Value
 final class Iterations<C extends Comparable<? super C>> {
     private final C                             duration;

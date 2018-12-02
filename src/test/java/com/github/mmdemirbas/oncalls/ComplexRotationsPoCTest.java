@@ -4,10 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * @author Muhammed Demirbaş
- * @since 2018-11-28 22:18
- */
 final class ComplexRotationsPoCTest {
 
     @Test

@@ -4,10 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * @author Muhammed Demirbaş
- * @since 2018-12-02 13:38
- */
 final class IterationTest {
     @Test
     void toIterations() {

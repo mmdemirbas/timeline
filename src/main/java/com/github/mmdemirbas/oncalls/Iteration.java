@@ -10,12 +10,6 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
-// todo: remove author header if removed from everywhere
-
-/**
- * @author Muhammed Demirbaş
- * @since 2018-12-01 16:04
- */
 @Value
 public final class Iteration<C extends Comparable<? super C>> {
     private final C              duration;

@@ -8,10 +8,6 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
-/**
- * @author Muhammed Demirbaş
- * @since 2018-12-02 21:41
- */
 public final class IterationBuilder<C extends Comparable<? super C>> {
     private final BinaryOperator<C> sum;
     private       Iteration<C>      iteration;

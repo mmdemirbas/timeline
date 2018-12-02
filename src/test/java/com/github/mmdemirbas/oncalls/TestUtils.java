@@ -11,10 +11,6 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
-/**
- * @author Muhammed Demirbaş
- * @since 2018-11-22 16:43
- */
 final class TestUtils {
     @SafeVarargs
     static <K, V> Map<K, V> mapOf(Entry<K, V>... entries) {

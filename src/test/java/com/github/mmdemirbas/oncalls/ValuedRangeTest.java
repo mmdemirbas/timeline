@@ -10,10 +10,6 @@ import static com.github.mmdemirbas.oncalls.TestUtils.pair;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * @author Muhammed Demirbaş
- * @since 2018-11-22 09:56
- */
 final class ValuedRangeTest {
     @Test
     void buildIntervalMap_NoEvents() {

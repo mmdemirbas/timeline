@@ -18,8 +18,7 @@ final class ZonedRotationTimelineTest {
 
     @Test
     void toTimeline_SimplestCase() {
-        assertTimeline(range(0, 50),
-                       iteration(10), asList(subrange(0, 10)),
+        assertTimeline(range(0, 50), iteration(10), asList(subrange(0, 10)),
                        range(0, 50),
                        mapOf(pair(zonedDateTime(0), asList(0)),
                              pair(zonedDateTime(10), asList(1)),
@@ -31,8 +30,7 @@ final class ZonedRotationTimelineTest {
 
     @Test
     void toTimeline_RecurrenceFinishedBeforeIteration() {
-        assertTimeline(range(0, 45),
-                       iteration(10), asList(subrange(0, 10)),
+        assertTimeline(range(0, 45), iteration(10), asList(subrange(0, 10)),
                        range(0, 45),
                        mapOf(pair(zonedDateTime(0), asList(0)),
                              pair(zonedDateTime(10), asList(1)),
@@ -54,8 +52,7 @@ final class ZonedRotationTimelineTest {
 
     @Test
     void toTimeline_CalculationRangeContainsRecurrenceRange() {
-        assertTimeline(range(10, 30),
-                       iteration(10), asList(subrange(0, 10)),
+        assertTimeline(range(10, 30), iteration(10), asList(subrange(0, 10)),
                        range(0, 50),
                        mapOf(pair(zonedDateTime(10), asList(0)),
                              pair(zonedDateTime(20), asList(1)),
@@ -64,8 +61,7 @@ final class ZonedRotationTimelineTest {
 
     @Test
     void toTimeline_RecurrenceRangeContainsCalculationRange() {
-        assertTimeline(range(0, 50),
-                       iteration(10), asList(subrange(0, 10)),
+        assertTimeline(range(0, 50), iteration(10), asList(subrange(0, 10)),
                        range(10, 30),
                        mapOf(pair(zonedDateTime(10), asList(1)),
                              pair(zonedDateTime(20), asList(2)),
@@ -74,8 +70,7 @@ final class ZonedRotationTimelineTest {
 
     @Test
     void toTimeline_CalculationRangeContainsIncompleteIterations() {
-        assertTimeline(range(0, 50),
-                       iteration(10), asList(subrange(0, 10)),
+        assertTimeline(range(0, 50), iteration(10), asList(subrange(0, 10)),
                        range(15, 35),
                        mapOf(pair(zonedDateTime(15), asList(1)),
                              pair(zonedDateTime(20), asList(2)),
@@ -134,7 +129,8 @@ final class ZonedRotationTimelineTest {
     }
 
     private static void assertTimeline(Range<ZonedDateTime> recurrenceRange,
-                                       Duration iterationDuration, List<Range<Instant>> subRanges,
+                                       Duration iterationDuration,
+                                       List<Range<Instant>> subRanges,
                                        Range<ZonedDateTime> calculationRange,
                                        Map<ZonedDateTime, List<Integer>> expected) {
         List<Integer> participants = asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
