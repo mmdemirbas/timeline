@@ -15,19 +15,19 @@ import static java.util.Arrays.asList;
  * @author Muhammed Demirbaş
  * @since 2018-11-22 16:43
  */
-public final class TestUtils {
+final class TestUtils {
     @SafeVarargs
-    public static <K, V> Map<K, V> mapOf(Entry<K, V>... entries) {
+    static <K, V> Map<K, V> mapOf(Entry<K, V>... entries) {
         Map<K, V> map = new LinkedHashMap<>();
         asList(entries).forEach(entry -> map.put(entry.getKey(), entry.getValue()));
         return map;
     }
 
-    public static <K, V> Entry<K, V> pair(K key, V value) {
+    static <K, V> Entry<K, V> pair(K key, V value) {
         return new SimpleImmutableEntry<>(key, value);
     }
 
-    public static <T, R> List<R> map(Collection<? extends T> items, Function<? super T, ? extends R> mapper) {
+    static <T, R> List<R> map(Collection<? extends T> items, Function<? super T, ? extends R> mapper) {
         return items.stream().map(mapper).collect(Collectors.toList());
     }
 }

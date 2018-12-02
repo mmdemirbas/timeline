@@ -247,7 +247,9 @@ final class TimelineTest {
     @Test
     void singleUserInifiniteRotation_at24() {
         assertRecipients(TimelineTest::getRecipientsWithInterval,
-                         asList(rotateForever(DAILY, "A")), asList(), expectAt(hour(24), onCallUntil(INF, "A")));
+                         asList(rotateForever(DAILY, "A")),
+                         asList(),
+                         expectAt(hour(24), onCallUntil(INF, "A")));
     }
 
     @Test

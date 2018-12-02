@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Muhammed Demirbaş
  * @since 2018-11-22 09:56
  */
-public final class ValuedRangeTest {
+final class ValuedRangeTest {
     @Test
     void buildIntervalMap_NoEvents() {
         assertIntervalMap(mapOf(), asList());

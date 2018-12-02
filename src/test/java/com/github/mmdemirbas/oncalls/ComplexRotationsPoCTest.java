@@ -10,14 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 final class ComplexRotationsPoCTest {
 
-    // todo: Introduce IterationsBuilder or alike to mention ComplexRotationsPoCTest::sum only once.
-
     @Test
     void officeHours() {
         Iteration<Integer> weekdays  = Iteration.of(7 * 24, Range.of(0, 5 * 24));
         Iteration<Integer> workHours = Iteration.of(24, Range.of(8, 18));
 
-        Iterations<Integer> actual = weekdays.split(workHours, 0, ComplexRotationsPoCTest::sum);
+        Iterations<Integer> actual = weekdays.newBuilder((x, y) -> x + y).split(workHours, 0);
         Iterations<Integer> expected = Iterations.of(7 * 24,
                                                      ValuedRange.of(Range.of(8, 18), 0),
                                                      ValuedRange.of(Range.of(32, 42), 1),
@@ -30,12 +28,12 @@ final class ComplexRotationsPoCTest {
 
     @Test
     void nonOfficeHours() {
-        Iteration<Integer> day = Iteration.of(24, Range.of(0, 24));
-        Iterations<Integer> actual = Iteration.of(24, Range.of(0, 8), Range.of(18, 24))
-                                              .repeat(5, ComplexRotationsPoCTest::sum)
-                                              .concat(day.repeat(2, ComplexRotationsPoCTest::sum),
-                                                      ComplexRotationsPoCTest::sum)
-                                              .split(day, 0, ComplexRotationsPoCTest::sum);
+        Iteration<Integer> day          = Iteration.of(24, Range.of(0, 24));
+        Iteration<Integer> nonWorkHours = Iteration.of(24, Range.of(0, 8), Range.of(18, 24));
+        Iterations<Integer> actual = nonWorkHours.newBuilder((x, y) -> x + y)
+                                                 .repeat(5)
+                                                 .concat(day, it -> it.repeat(2))
+                                                 .split(day, 0);
 
         Iterations<Integer> expected = Iterations.of(7 * 24,
                                                      ValuedRange.of(Range.of(0, 8), 0),
@@ -60,8 +58,8 @@ final class ComplexRotationsPoCTest {
         Iteration<Integer> workHours  = Iteration.of(24, Range.of(8, 17));
         Iteration<Integer> threeHours = Iteration.of(3, Range.of(0, 3));
 
-        Iterations<Integer> innerSplit = workHours.split(threeHours, 8, ComplexRotationsPoCTest::sum);
-        Iterations<Integer> actual     = weekdays.split(innerSplit, 0, ComplexRotationsPoCTest::sum);
+        Iterations<Integer> actual = weekdays.newBuilder((x, y) -> x + y)
+                                             .split(workHours, 0, it -> it.split(threeHours, 8));
         Iterations<Integer> expected = Iterations.of(7 * 24,
                                                      ValuedRange.of(Range.of(8, 11), 0),
                                                      ValuedRange.of(Range.of(11, 14), 1),
@@ -80,10 +78,6 @@ final class ComplexRotationsPoCTest {
                                                      ValuedRange.of(Range.of(110, 113), 14));
 
         assertEquals(expected, actual);
-    }
-
-    private static int sum(Integer x, Integer y) {
-        return x + y;
     }
 
     // todo: write test for non-standard schedules such as 'every ramadan', 'every leap day', 'first work day of month' etc.
