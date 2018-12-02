@@ -14,6 +14,9 @@ import static java.util.Objects.requireNonNull;
  */
 public abstract class RotationTimeline<C extends Comparable<? super C>, U extends Comparable<? super U>, V> implements
                                                                                                             Timeline<C, V> {
+
+    // todo: how to handle changes to a rotation at an arbitrary point after some iterations already executed
+
     private final Range<C>      rotationRange;
     private final Iterations<U> iterations;
 

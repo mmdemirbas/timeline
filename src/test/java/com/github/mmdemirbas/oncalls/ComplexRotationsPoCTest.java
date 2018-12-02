@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+// todo: it may be better to move these test into appropriate places
 final class ComplexRotationsPoCTest {
 
     @Test
@@ -26,10 +27,7 @@ final class ComplexRotationsPoCTest {
     void nonOfficeHours() {
         Iteration<Integer> day          = Iteration.of(24, Range.of(0, 24));
         Iteration<Integer> nonWorkHours = Iteration.of(24, Range.of(0, 8), Range.of(18, 24));
-        Iterations<Integer> actual = nonWorkHours.newBuilder((x, y) -> x + y)
-                                                 .repeat(5)
-                                                 .concat(day, it -> it.repeat(2))
-                                                 .split(day, 0);
+        Iterations<Integer> actual = nonWorkHours.newBuilder((x, y) -> x + y).repeat(5).concat(day, it -> it.repeat(2)).split(day, 0);
 
         Iterations<Integer> expected = Iterations.of(7 * 24,
                                                      ValuedRange.of(Range.of(0, 8), 0),
@@ -54,8 +52,7 @@ final class ComplexRotationsPoCTest {
         Iteration<Integer> workHours  = Iteration.of(24, Range.of(8, 17));
         Iteration<Integer> threeHours = Iteration.of(3, Range.of(0, 3));
 
-        Iterations<Integer> actual = weekdays.newBuilder((x, y) -> x + y)
-                                             .split(workHours, 0, it -> it.split(threeHours, 8));
+        Iterations<Integer> actual = weekdays.newBuilder((x, y) -> x + y).split(workHours, 0, it -> it.split(threeHours, 8));
         Iterations<Integer> expected = Iterations.of(7 * 24,
                                                      ValuedRange.of(Range.of(8, 11), 0),
                                                      ValuedRange.of(Range.of(11, 14), 1),
@@ -76,5 +73,5 @@ final class ComplexRotationsPoCTest {
         assertEquals(expected, actual);
     }
 
-    // todo: write test for non-standard schedules such as 'every ramadan', 'every leap day', 'first work day of month' etc.
+    // todo: write test for non-standard schedules such as 'every ramadan', 'every leap day', 'first work day of every month', 'last work day of every month' etc.
 }

@@ -19,6 +19,8 @@ import static java.util.Objects.requireNonNull;
 public final class StaticTimeline<C extends Comparable<? super C>, V> implements Timeline<C, V>, TimelineSegment<C, V> {
     private final NavigableMap<C, List<V>> intervalMap;
 
+    // todo: consider automatic equals/hashCode/toString based on lombok @Value etc.
+
     public static <C extends Comparable<? super C>, V> StaticTimeline<C, V> ofIntervals(Collection<ValuedRange<C, V>> intervals) {
         return new StaticTimeline<>(ValuedRange.buildIntervalMap(intervals));
     }
