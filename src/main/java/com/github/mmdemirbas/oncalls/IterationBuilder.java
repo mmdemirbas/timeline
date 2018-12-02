@@ -2,10 +2,11 @@ package com.github.mmdemirbas.oncalls;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author Muhammed Demirbaş
@@ -21,9 +22,8 @@ public final class IterationBuilder<C extends Comparable<? super C>> {
     }
 
     private IterationBuilder(Iteration<C> iteration, BinaryOperator<C> sum) {
-        // todo: add null-checks for other classes also
-        this.iteration = Objects.requireNonNull(iteration, "iteration");
-        this.sum = Objects.requireNonNull(sum, "sum");
+        this.iteration = requireNonNull(iteration, "iteration");
+        this.sum = requireNonNull(sum, "sum");
     }
 
     public Iteration<C> build() {
@@ -35,28 +35,33 @@ public final class IterationBuilder<C extends Comparable<? super C>> {
     }
 
     public Iterations<C> split(Iteration<C> unit, C startOffset) {
+        requireNonNull(unit, "unit");
         return split(unit.toIterations(), startOffset);
     }
 
     public Iterations<C> split(Iterations<C> units, C startOffset) {
+        requireNonNull(units, "units");
+        requireNonNull(startOffset, "startOffset");
+
         C                             unitDuration         = units.getDuration();
         List<ValuedRange<C, Integer>> iterations           = new ArrayList<>();
-        int                           valueOffset          = 0;
+        int                           iterationIndexOffset = 0;
         long                          uniqueIterationCount = units.findUniqueIterationCount();
 
         while (startOffset.compareTo(iteration.getDuration()) < 0) {
             for (ValuedRange<C, Integer> unit : units.getRanges()) {
-                Range<C> range = unit.getRange();
-                Integer  value = unit.getValue();
+                Range<C> range          = unit.getRange();
+                Integer  iterationIndex = unit.getValue();
 
                 for (Range<C> subRange : iteration.getRanges()) {
-                    Range<C> intersect = range.map(sum, startOffset).intersect(subRange);
+                    C        finalOffset = startOffset;
+                    Range<C> intersect   = range.map(value -> sum.apply(finalOffset, value)).intersect(subRange);
                     if (!intersect.isEmpty()) {
-                        iterations.add(ValuedRange.of(intersect, valueOffset + value));
+                        iterations.add(ValuedRange.of(intersect, iterationIndexOffset + iterationIndex));
                     }
                 }
             }
-            valueOffset += uniqueIterationCount;
+            iterationIndexOffset += uniqueIterationCount;
             startOffset = sum.apply(startOffset, unitDuration);
         }
 
@@ -79,6 +84,8 @@ public final class IterationBuilder<C extends Comparable<? super C>> {
     }
 
     public IterationBuilder<C> concat(Iteration<C> other) {
+        requireNonNull(other, "other");
+
         C              totalDuration  = sum.apply(iteration.getDuration(), other.getDuration());
         List<Range<C>> appendedRanges = new ArrayList<>(iteration.getRanges());
         appendedRanges.addAll(rangesWithOffset(other, iteration.getDuration()));
@@ -87,7 +94,10 @@ public final class IterationBuilder<C extends Comparable<? super C>> {
     }
 
     private List<Range<C>> rangesWithOffset(Iteration<C> other, C offset) {
-        return other.getRanges().stream().map(range -> range.map(sum, offset)).collect(Collectors.toList());
+        return other.getRanges()
+                    .stream()
+                    .map(range -> range.map(value -> sum.apply(offset, value)))
+                    .collect(Collectors.toList());
     }
 
     private Iteration<C> modify(Iteration<C> other, Consumer<IterationBuilder<C>> modify) {

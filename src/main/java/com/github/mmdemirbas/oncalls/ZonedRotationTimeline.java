@@ -6,6 +6,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.unmodifiableList;
@@ -22,7 +23,7 @@ public final class ZonedRotationTimeline<V> extends RotationTimeline<ZonedDateTi
     public ZonedRotationTimeline(Range<ZonedDateTime> rotationRange, Iterations<Instant> iterations,
                                  List<V> recipients) {
         super(rotationRange, iterations);
-        this.recipients = unmodifiableList(new ArrayList<>(recipients));
+        this.recipients = unmodifiableList(new ArrayList<>(Objects.requireNonNull(recipients, "recipients")));
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import java.util.function.BiFunction;
 
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Represent a finite interval of a {@link Timeline}. Used to merge multiple timelines and query details.
@@ -21,7 +22,7 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
     default <A> TimelineSegment<C, V> mergeWith(List<TimelineSegment<C, A>> segments,
                                                 BiFunction<List<V>, List<A>, List<V>> mergeFunction) {
         TimelineSegment<C, V> result = this;
-        for (TimelineSegment<C, A> segment : segments) {
+        for (TimelineSegment<C, A> segment : requireNonNull(segments, "segments")) {
             result = result.mergeWith(segment, mergeFunction);
         }
         return result;
@@ -29,6 +30,9 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
 
     default <A> TimelineSegment<C, V> mergeWith(TimelineSegment<C, A> segment,
                                                 BiFunction<List<V>, List<A>, List<V>> mergeFunction) {
+        requireNonNull(segment, "segment");
+        requireNonNull(mergeFunction, "mergeFunction");
+
         List<ValuedRange<C, V>> valuedRanges = new ArrayList<>();
         List<V>                 values       = emptyList();
         C                       start        = null;

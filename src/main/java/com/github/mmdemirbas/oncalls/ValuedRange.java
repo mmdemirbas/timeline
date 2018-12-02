@@ -15,6 +15,7 @@ import java.util.function.Function;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableNavigableMap;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Represents an association between a {@link Range} and an arbitrary value.
@@ -34,7 +35,7 @@ public final class ValuedRange<C extends Comparable<? super C>, V> {
     }
 
     private ValuedRange(Range<C> range, V value) {
-        this.range = range;
+        this.range = requireNonNull(range);
         this.value = value;
     }
 

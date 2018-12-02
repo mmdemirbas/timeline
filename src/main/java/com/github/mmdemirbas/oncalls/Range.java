@@ -59,12 +59,8 @@ public final class Range<C extends Comparable<? super C>> {
         return startInclusive.compareTo(endExclusive) == 0;
     }
 
-    public <U, R extends Comparable<? super R>> Range<R> map(BiFunction<? super U, ? super C, ? extends R> mapper,
-                                                             U firstArg) {
-        return map(c -> mapper.apply(firstArg, c));
-    }
-
     public <R extends Comparable<? super R>> Range<R> map(Function<? super C, ? extends R> mapper) {
+        requireNonNull(mapper, "mapper");
         // todo: write test
         return of(mapper.apply(startInclusive), mapper.apply(endExclusive));
     }
@@ -73,6 +69,7 @@ public final class Range<C extends Comparable<? super C>> {
      * Returns intersection of this range with the given range.
      */
     public Range<C> intersect(Range<C> other) {
+        requireNonNull(other, "other");
         C start  = maxOf(startInclusive, other.startInclusive);
         C end    = minOf(endExclusive, other.endExclusive);
         C finalS = minOf(start, end);

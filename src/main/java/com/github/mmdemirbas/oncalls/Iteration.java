@@ -8,6 +8,7 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
 // todo: remove author header if removed from everywhere
 
@@ -30,7 +31,7 @@ public final class Iteration<C extends Comparable<? super C>> {
     }
 
     private Iteration(C duration, Collection<Range<C>> ranges) {
-        this.duration = duration;
+        this.duration = requireNonNull(duration, "duration");
         this.ranges = Range.toDisjointRanges(ranges);
         Iterations.ensureDurationNotExceeded(this.ranges, duration, it -> it);
     }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author Muhammed Demirbaş
@@ -19,18 +20,16 @@ final class Iterations<C extends Comparable<? super C>> {
     private final List<ValuedRange<C, Integer>> ranges;
 
     @SafeVarargs
-    public static <C extends Comparable<? super C>> Iterations<C> of(C duration,
-                                                                     ValuedRange<C, Integer>... iterations) {
-        return of(duration, asList(iterations));
+    public static <C extends Comparable<? super C>> Iterations<C> of(C duration, ValuedRange<C, Integer>... ranges) {
+        return of(duration, asList(ranges));
     }
 
-    public static <C extends Comparable<? super C>> Iterations<C> of(C duration,
-                                                                     List<ValuedRange<C, Integer>> iterations) {
-        return new Iterations<>(duration, iterations);
+    public static <C extends Comparable<? super C>> Iterations<C> of(C duration, List<ValuedRange<C, Integer>> ranges) {
+        return new Iterations<>(duration, ranges);
     }
 
-    private Iterations(C duration, List<ValuedRange<C, Integer>> ranges) {
-        this.duration = duration;
+    private Iterations(C duration, Collection<ValuedRange<C, Integer>> ranges) {
+        this.duration = requireNonNull(duration, "duration");
         this.ranges = ValuedRange.toDisjointIntervals(ranges);
         ensureDurationNotExceeded(this.ranges, duration, ValuedRange::getRange);
     }

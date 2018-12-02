@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * A {@link Timeline} implementation which applies patches on top of a base timeline.
@@ -16,8 +17,9 @@ public final class PatchedTimeline<C extends Comparable<? super C>, V> implement
     private final List<Timeline<C, UnaryOperator<List<V>>>> patchTimelines;
 
     public PatchedTimeline(Timeline<C, V> baseTimeline, List<Timeline<C, UnaryOperator<List<V>>>> patchTimelines) {
-        this.baseTimeline = baseTimeline;
-        this.patchTimelines = unmodifiableList(new ArrayList<>(patchTimelines));
+        this.baseTimeline = requireNonNull(baseTimeline, "baseTimeline");
+        // todo: bu ve bunun gibi yerlerde list olarak kullanılacak şey null ise empty list kullanılabilir NPE atmak yerine..
+        this.patchTimelines = unmodifiableList(new ArrayList<>(requireNonNull(patchTimelines, "patchTimelines")));
     }
 
     @Override

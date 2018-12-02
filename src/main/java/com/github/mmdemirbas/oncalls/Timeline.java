@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Base interface for all timelines.
  *
@@ -21,10 +23,11 @@ public interface Timeline<C extends Comparable<? super C>, V> {
     default <A> TimelineSegment<C, V> mergeWith(List<Timeline<C, A>> timelines,
                                                 Range<C> calculationRange,
                                                 BiFunction<List<V>, List<A>, List<V>> mergeFunction) {
-        List<TimelineSegment<C, A>> segments = timelines.stream()
-                                                        .map(timeline -> timeline.toSegment(calculationRange))
-                                                        .collect(Collectors.toList());
-        return toSegment(calculationRange).mergeWith(segments, mergeFunction);
+        return toSegment(calculationRange).mergeWith(requireNonNull(timelines, "timelines").stream()
+                                                                                           .map(timeline -> timeline.toSegment(
+                                                                                                   calculationRange))
+                                                                                           .collect(Collectors.toList()),
+                                                     mergeFunction);
     }
 
     /**
