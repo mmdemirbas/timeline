@@ -4,10 +4,8 @@ import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -35,22 +33,7 @@ public final class Iteration<C extends Comparable<? super C>> {
     private Iteration(C duration, Collection<Range<C>> ranges) {
         this.duration = duration;
         this.ranges = Range.toDisjointRanges(ranges);
-        ensureDurationNotExceeded(this.ranges, duration, it -> it);
-    }
-
-    public static <C extends Comparable<? super C>, T> void ensureDurationNotExceeded(Collection<T> elements,
-                                                                                      C duration,
-                                                                                      Function<? super T, Range<C>> getRange) {
-        C max = elements.stream().map(getRange).map(Range::getEndExclusive).max(Comparator.naturalOrder()).orElse(null);
-        if (max == null) {
-            throw new NullPointerException("Iteration has no sub-ranges.");
-        }
-        if (duration.compareTo(max) < 0) {
-            throw new RuntimeException(String.format(
-                    "Sub-ranges exceed the iteration end. Iteration ends at: %s, sub-ranges ends at: %s",
-                    duration,
-                    max));
-        }
+        Iterations.ensureDurationNotExceeded(this.ranges, duration, it -> it);
     }
 
     public Iterations<C> split(Iteration<C> unit, C offset, BinaryOperator<C> sum) {
