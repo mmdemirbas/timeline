@@ -21,7 +21,6 @@ public final class ZonedRotationTimeline<V> extends RotationTimeline<ZonedDateTi
     public ZonedRotationTimeline(Range<ZonedDateTime> rotationRange, Iterations<Instant> iterations,
                                  List<V> recipients) {
         super(rotationRange, iterations);
-        // todo: write tests for null-checks
         this.recipients = unmodifiableCopyOf(recipients);
     }
 

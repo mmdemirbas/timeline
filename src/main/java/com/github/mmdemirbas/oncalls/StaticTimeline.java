@@ -24,17 +24,15 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
     }
 
     private StaticTimeline(NavigableMap<C, List<V>> intervalMap) {
-        // todo: ensure inner lists also immutable -- may be extracted to a unmodifiableCopyOf() utility method
         this.intervalMap = unmodifiableNavigableMap(requireNonNull(intervalMap, "intervalMap"));
     }
 
     @Override
     public TimelineSegment<C, V> toSegment(Range<C> calculationRange) {
-        requireNonNull(calculationRange, "calculationRange");
-
-        C                        start = calculationRange.getStartInclusive();
-        C                        end   = calculationRange.getEndExclusive();
-        NavigableMap<C, List<V>> map   = new TreeMap<>(intervalMap.subMap(start, end));
+        boolean                  noLimit = calculationRange == null;
+        C                        start   = noLimit ? intervalMap.firstKey() : calculationRange.getStartInclusive();
+        C                        end     = noLimit ? intervalMap.lastKey() : calculationRange.getEndExclusive();
+        NavigableMap<C, List<V>> map     = new TreeMap<>(intervalMap.subMap(start, end));
 
         Entry<C, List<V>> startEntry = intervalMap.floorEntry(start);
         List<V>           startValue = (startEntry == null) ? emptyList() : startEntry.getValue();

@@ -24,30 +24,30 @@ public abstract class RotationTimeline<C extends Comparable<? super C>, U extend
 
     @Override
     public final TimelineSegment<C, V> toSegment(Range<C> calculationRange) {
-        // todo: null may be allowed to represent "no limit" -- also requires changes to StaticTimeline code and Timeline javadoc.
-        requireNonNull(calculationRange, "calculationRange");
+        // todo: test all timelines with null calculationRange
+        boolean  noLimit              = calculationRange == null;
+        Range<C> effectiveRange       = noLimit ? rotationRange : rotationRange.intersect(calculationRange);
+        long     startIndex           = indexAtPoint(effectiveRange.getStartInclusive());
+        long     endIndex             = indexAtPoint(effectiveRange.getEndExclusive());
+        C        rangeOffset          = pointAtIndex(startIndex);
+        long     uniqueIterationCount = iterations.findUniqueIterationCount();
+        long     indexOffset          = uniqueIterationCount * startIndex;
 
-        List<ValuedRange<C, V>> valuedRanges         = new ArrayList<>();
-        Range<C>                effectiveRange       = rotationRange.intersect(calculationRange);
-        long                    startIndex           = indexAtPoint(effectiveRange.getStartInclusive());
-        long                    endIndex             = indexAtPoint(effectiveRange.getEndExclusive());
-        C                       rangeOffset          = pointAtIndex(startIndex);
-        long                    uniqueIterationCount = iterations.findUniqueIterationCount();
-        long                    indexOffset          = uniqueIterationCount * startIndex;
-
+        // todo: rename other valuedRanges to intervals
+        List<ValuedRange<C, V>> intervals = new ArrayList<>();
         for (long index = startIndex; index <= endIndex; index++) {
             for (ValuedRange<U, Integer> valuedRange : iterations.getRanges()) {
                 Range<U> range            = valuedRange.getRange();
                 long     recipientIndex   = indexOffset + valuedRange.getValue();
                 V        recipient        = recipientAtIndex(recipientIndex);
                 C        finalRangeOffset = rangeOffset;
-                valuedRanges.add(ValuedRange.of(range.map(value -> add(finalRangeOffset, value))
-                                                     .intersect(effectiveRange), recipient));
+                intervals.add(ValuedRange.of(range.map(value -> add(finalRangeOffset, value)).intersect(effectiveRange),
+                                             recipient));
             }
             rangeOffset = add(rangeOffset, iterations.getDuration());
             indexOffset += uniqueIterationCount;
         }
-        return StaticTimeline.ofIntervals(valuedRanges);
+        return StaticTimeline.ofIntervals(intervals);
     }
 
     private C add(C offset, U unitDuration) {

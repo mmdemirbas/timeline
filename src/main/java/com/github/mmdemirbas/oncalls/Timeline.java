@@ -23,11 +23,10 @@ public interface Timeline<C extends Comparable<? super C>, V> {
     default <A> TimelineSegment<C, V> mergeWith(List<Timeline<C, A>> timelines,
                                                 Range<C> calculationRange,
                                                 BiFunction<List<V>, List<A>, List<V>> mergeFunction) {
-        return toSegment(calculationRange).mergeWith(requireNonNull(timelines, "timelines").stream()
-                                                                                           .map(timeline -> timeline.toSegment(
-                                                                                                   calculationRange))
-                                                                                           .collect(Collectors.toList()),
-                                                     mergeFunction);
+        requireNonNull(timelines, "timelines");
+        return toSegment(calculationRange).mergeWith(timelines.stream()
+                                                              .map(timeline -> timeline.toSegment(calculationRange))
+                                                              .collect(Collectors.toList()), mergeFunction);
     }
 
     /**
