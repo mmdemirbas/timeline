@@ -5,11 +5,9 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 
 /**
@@ -21,26 +19,10 @@ import static java.util.Collections.unmodifiableList;
 public final class ZonedRotationTimeline<V> extends RotationTimeline<ZonedDateTime, Instant, V> {
     private final List<V> recipients;
 
-    public ZonedRotationTimeline(Range<ZonedDateTime> rotationRange,
-                                 Duration iterationDuration,
-                                 Collection<Range<Instant>> iterationRanges,
+    public ZonedRotationTimeline(Range<ZonedDateTime> rotationRange, Iterations<Instant> iterations,
                                  List<V> recipients) {
-        super(rotationRange, buildIterations(iterationDuration, iterationRanges));
+        super(rotationRange, iterations);
         this.recipients = unmodifiableList(new ArrayList<>(recipients));
-    }
-
-    private static Iterations<Instant> buildIterations(Duration iterationDuration,
-                                                       Collection<Range<Instant>> iterationRanges) {
-
-        // todo: write test to show that empty subranges handled
-        // todo: write javadoc to explain that empty subranges handled
-        List<Range<Instant>> disjointIterationRanges = Range.toDisjointRanges(iterationRanges);
-        return Iteration.of(Instant.ofEpochSecond(0, iterationDuration.toNanos()),
-                            disjointIterationRanges.isEmpty()
-                            ? singletonList(Range.of(Instant.EPOCH,
-                                                     Instant.ofEpochSecond(0L,
-                                                                           iterationDuration.toNanos())))
-                            : disjointIterationRanges).toIterations();
     }
 
     @Override

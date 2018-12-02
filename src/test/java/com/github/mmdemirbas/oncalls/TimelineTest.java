@@ -247,8 +247,7 @@ final class TimelineTest {
     @Test
     void singleUserInifiniteRotation_at24() {
         assertRecipients(TimelineTest::getRecipientsWithInterval,
-                         asList(rotateForever(DAILY, "A")),
-                         asList(), expectAt(hour(24), onCallUntil(INF, "A")));
+                         asList(rotateForever(DAILY, "A")), asList(), expectAt(hour(24), onCallUntil(INF, "A")));
     }
 
     @Test
@@ -481,7 +480,9 @@ final class TimelineTest {
     }
 
     private static Timeline<ZonedDateTime, String> rotateForever(Duration rotationPeriod, String... recipients) {
-        return rotateForever(rotationPeriod, asList(), recipients);
+        return rotateForever(rotationPeriod,
+                             asList(restrictTo(min(0), min((int) rotationPeriod.toMinutes()))),
+                             recipients);
     }
 
     private static Timeline<ZonedDateTime, String> rotateForever(Duration rotationPeriod,
@@ -493,14 +494,20 @@ final class TimelineTest {
     private static Timeline<ZonedDateTime, String> rotateUntil(Instant endTime,
                                                                Duration rotationPeriod,
                                                                String... recipients) {
-        return rotateUntil(endTime, rotationPeriod, asList(), recipients);
+        return rotateUntil(endTime,
+                           rotationPeriod,
+                           asList(restrictTo(min(0), min((int) rotationPeriod.toMinutes()))),
+                           recipients);
     }
 
     private static Timeline<ZonedDateTime, String> rotateUntil(Instant endTime,
                                                                Duration rotationPeriod,
                                                                List<Range<Instant>> restrictions,
                                                                String... recipients) {
-        return new ZonedRotationTimeline<>(dateRange(ZERO, endTime), rotationPeriod, restrictions, asList(recipients));
+        return new ZonedRotationTimeline<>(dateRange(ZERO, endTime),
+                                           Iteration.of(min((int) rotationPeriod.toMinutes()), restrictions)
+                                                    .toIterations(),
+                                           asList(recipients));
     }
 
     private static ValuedRange<Instant, String> overrideBetween(Instant startTime, Instant endTime, String name) {

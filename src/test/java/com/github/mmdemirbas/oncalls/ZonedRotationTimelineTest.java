@@ -6,7 +6,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +19,7 @@ final class ZonedRotationTimelineTest {
     @Test
     void toTimeline_SimplestCase() {
         assertTimeline(range(0, 50),
-                       iteration(10),
-                       asList(),
+                       iteration(10), asList(subrange(0, 10)),
                        range(0, 50),
                        mapOf(pair(zonedDateTime(0), asList(0)),
                              pair(zonedDateTime(10), asList(1)),
@@ -34,8 +32,7 @@ final class ZonedRotationTimelineTest {
     @Test
     void toTimeline_RecurrenceFinishedBeforeIteration() {
         assertTimeline(range(0, 45),
-                       iteration(10),
-                       asList(),
+                       iteration(10), asList(subrange(0, 10)),
                        range(0, 45),
                        mapOf(pair(zonedDateTime(0), asList(0)),
                              pair(zonedDateTime(10), asList(1)),
@@ -47,19 +44,18 @@ final class ZonedRotationTimelineTest {
 
     @Test
     void toTimeline_CalculationRangeBeforeRecurrenceRange() {
-        assertTimeline(range(20, 40), iteration(10), asList(), range(0, 20), mapOf());
+        assertTimeline(range(20, 40), iteration(10), asList(subrange(0, 10)), range(0, 20), mapOf());
     }
 
     @Test
     void toTimeline_RecurrenceRangeBeforeCalculationRange() {
-        assertTimeline(range(0, 20), iteration(10), asList(), range(20, 40), mapOf());
+        assertTimeline(range(0, 20), iteration(10), asList(subrange(0, 10)), range(20, 40), mapOf());
     }
 
     @Test
     void toTimeline_CalculationRangeContainsRecurrenceRange() {
         assertTimeline(range(10, 30),
-                       iteration(10),
-                       asList(),
+                       iteration(10), asList(subrange(0, 10)),
                        range(0, 50),
                        mapOf(pair(zonedDateTime(10), asList(0)),
                              pair(zonedDateTime(20), asList(1)),
@@ -69,8 +65,7 @@ final class ZonedRotationTimelineTest {
     @Test
     void toTimeline_RecurrenceRangeContainsCalculationRange() {
         assertTimeline(range(0, 50),
-                       iteration(10),
-                       asList(),
+                       iteration(10), asList(subrange(0, 10)),
                        range(10, 30),
                        mapOf(pair(zonedDateTime(10), asList(1)),
                              pair(zonedDateTime(20), asList(2)),
@@ -80,8 +75,7 @@ final class ZonedRotationTimelineTest {
     @Test
     void toTimeline_CalculationRangeContainsIncompleteIterations() {
         assertTimeline(range(0, 50),
-                       iteration(10),
-                       asList(),
+                       iteration(10), asList(subrange(0, 10)),
                        range(15, 35),
                        mapOf(pair(zonedDateTime(15), asList(1)),
                              pair(zonedDateTime(20), asList(2)),
@@ -140,14 +134,14 @@ final class ZonedRotationTimelineTest {
     }
 
     private static void assertTimeline(Range<ZonedDateTime> recurrenceRange,
-                                       Duration iterationDuration,
-                                       Collection<Range<Instant>> subRanges,
+                                       Duration iterationDuration, List<Range<Instant>> subRanges,
                                        Range<ZonedDateTime> calculationRange,
                                        Map<ZonedDateTime, List<Integer>> expected) {
         List<Integer> participants = asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         Timeline<ZonedDateTime, Integer> recurrence = new ZonedRotationTimeline<>(recurrenceRange,
-                                                                                  iterationDuration,
-                                                                                  subRanges,
+                                                                                  Iteration.of(instant((int) iterationDuration
+                                                                                          .toMillis()), subRanges)
+                                                                                           .toIterations(),
                                                                                   participants);
         TimelineSegment<ZonedDateTime, Integer> timeline = recurrence.toSegment(calculationRange);
         assertEquals(expected, timeline.toIntervalMap());
