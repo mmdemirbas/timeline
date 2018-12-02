@@ -32,8 +32,8 @@ final class ComplexRotationsPoCTest {
     void nonOfficeHours() {
         Iteration<Integer> day = Iteration.of(24, Range.of(0, 24));
         Iterations<Integer> actual = Iteration.of(24, Range.of(0, 8), Range.of(18, 24))
-                                              .multiply(5, ComplexRotationsPoCTest::sum)
-                                              .concat(day.multiply(2, ComplexRotationsPoCTest::sum),
+                                              .repeat(5, ComplexRotationsPoCTest::sum)
+                                              .concat(day.repeat(2, ComplexRotationsPoCTest::sum),
                                                       ComplexRotationsPoCTest::sum)
                                               .split(day, 0, ComplexRotationsPoCTest::sum);
 

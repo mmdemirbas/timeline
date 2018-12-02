@@ -41,7 +41,7 @@ public final class IterationTest {
     }
 
     @Test
-    public void multiply() {
+    public void repeat() {
         assertEquals(Iteration.of(30,
                                   Range.of(2, 4),
                                   Range.of(5, 8),
@@ -49,7 +49,7 @@ public final class IterationTest {
                                   Range.of(15, 18),
                                   Range.of(22, 24),
                                   Range.of(25, 28)),
-                     Iteration.of(10, Range.of(2, 4), Range.of(5, 8)).multiply(3, (x, y) -> x + y));
+                     Iteration.of(10, Range.of(2, 4), Range.of(5, 8)).repeat(3, (x, y) -> x + y));
     }
 
     @Test

@@ -36,6 +36,11 @@ public final class Iteration<C extends Comparable<? super C>> {
         Iterations.ensureDurationNotExceeded(this.ranges, duration, it -> it);
     }
 
+    public Iterations<C> toIterations() {
+        return Iterations.of(duration,
+                             ranges.stream().map(range -> ValuedRange.of(range, 0)).collect(Collectors.toList()));
+    }
+
     public Iterations<C> split(Iteration<C> unit, C offset, BinaryOperator<C> sum) {
         return split(unit.toIterations(), offset, sum);
     }
@@ -65,12 +70,7 @@ public final class Iteration<C extends Comparable<? super C>> {
         return Iterations.of(duration, iterations);
     }
 
-    public Iterations<C> toIterations() {
-        return Iterations.of(duration,
-                             ranges.stream().map(range -> ValuedRange.of(range, 0)).collect(Collectors.toList()));
-    }
-
-    public Iteration<C> multiply(int count, BinaryOperator<C> sum) {
+    public Iteration<C> repeat(int count, BinaryOperator<C> sum) {
         if (count < 1)
             throw new RuntimeException("count must be >= 1, but was: " + count);
 
