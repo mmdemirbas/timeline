@@ -93,6 +93,12 @@ public interface TimelineSegment<C extends Comparable<? super C>, V> {
     ValuedRange<C, List<V>> findNextInterval(C point);
 
     /**
+     * Returns the first interval having a non-empty value list and
+     * coming after the interval containing the specified {@code point}.
+     */
+    ValuedRange<C, List<V>> findNextNonEmptyInterval(C point);
+
+    /**
      * Returns an interval map representation.
      */
     NavigableMap<C, List<V>> toIntervalMap();

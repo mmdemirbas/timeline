@@ -77,6 +77,18 @@ public final class StaticTimeline<C extends Comparable<? super C>, V> implements
         return getValuesOrNull(intervalMap.higherEntry(point));
     }
 
+    @Override
+    public ValuedRange<C, List<V>> findNextNonEmptyInterval(C point) {
+        NavigableMap<C, List<V>> map = intervalMap.tailMap(point, false);
+        for (Entry<C, List<V>> entry : map.entrySet()) {
+            List<V> values = entry.getValue();
+            if (!values.isEmpty()) {
+                return getValuesOrNull(entry);
+            }
+        }
+        return null;
+    }
+
     private ValuedRange<C, List<V>> getValuesOrNull(Entry<C, List<V>> entry) {
         if (entry != null) {
             C key     = entry.getKey();

@@ -51,6 +51,11 @@ final class StaticTimelineTest {
     }
 
     @Test
+    void immutability_findNextNonEmptyInterval() {
+        assertUnmodifiable(buildTimeline().findNextNonEmptyInterval(0).getValue(), "0");
+    }
+
+    @Test
     void immutability_findCurrentValues() {
         assertUnmodifiable(buildTimeline().findCurrentValues(0), "0");
     }
