@@ -1,3 +1,8 @@
-### Maven template
-.idea/
+*.iml
+*.log
+.gradle
+/.*/
+build/
+hs_err_pid*
+out/
 target/
