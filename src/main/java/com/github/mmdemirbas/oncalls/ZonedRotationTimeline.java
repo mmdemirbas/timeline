@@ -18,7 +18,8 @@ import static com.github.mmdemirbas.oncalls.Utils.unmodifiableCopyOf;
 public final class ZonedRotationTimeline<V> extends RotationTimeline<ZonedDateTime, Instant, V> {
     private final List<V> recipients;
 
-    public ZonedRotationTimeline(Range<ZonedDateTime> rotationRange, Iterations<Instant> iterations,
+    public ZonedRotationTimeline(Range<ZonedDateTime> rotationRange,
+                                 Iterations<Instant> iterations,
                                  List<V> recipients) {
         super(rotationRange, iterations);
         this.recipients = unmodifiableCopyOf(recipients);

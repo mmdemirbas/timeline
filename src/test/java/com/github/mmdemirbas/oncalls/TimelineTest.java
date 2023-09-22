@@ -2,11 +2,7 @@ package com.github.mmdemirbas.oncalls;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,12 +16,7 @@ import java.util.stream.Stream;
 
 import static com.github.mmdemirbas.oncalls.TestUtils.map;
 import static com.github.mmdemirbas.oncalls.TestUtils.pair;
-import static com.github.mmdemirbas.oncalls.TimelineTest.DAY.FRIDAY;
-import static com.github.mmdemirbas.oncalls.TimelineTest.DAY.MONDAY;
-import static com.github.mmdemirbas.oncalls.TimelineTest.DAY.SATURDAY;
-import static com.github.mmdemirbas.oncalls.TimelineTest.DAY.THURSDAY;
-import static com.github.mmdemirbas.oncalls.TimelineTest.DAY.TUESDAY;
-import static com.github.mmdemirbas.oncalls.TimelineTest.DAY.WEDNESDAY;
+import static com.github.mmdemirbas.oncalls.TimelineTest.DAY.*;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -1376,12 +1367,16 @@ final class TimelineTest {
                                                           Duration rotationPeriod,
                                                           List<Range<Instant>> restrictions,
                                                           String... recipients) {
+        List<ValuedRange<Instant, Integer>> iterations = restrictions.isEmpty()
+                                                         ? asList(ValuedRange.of(restrictTo(ZERO,
+                                                                                            min((int) rotationPeriod.toMinutes())),
+                                                                                 0))
+                                                         : restrictions.stream()
+                                                                       .map(range -> ValuedRange.of(range, 0))
+                                                                       .collect(Collectors.toList());
         return new ZonedRotationTimeline<>(dateRange(startTime, endTime),
-                                           Iteration.of(min((int) rotationPeriod.toMinutes()),
-                                                        restrictions.isEmpty()
-                                                        ? asList(restrictTo(ZERO,
-                                                                            min((int) rotationPeriod.toMinutes())))
-                                                        : restrictions).toIterations(),
+                                           Iterations.of(min((int) rotationPeriod.toMinutes()),
+                                                         iterations),
                                            asList(recipients));
     }
 

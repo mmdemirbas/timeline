@@ -17,14 +17,14 @@ public final class Iteration<C extends Comparable<? super C>> {
 
     @SafeVarargs
     public static <C extends Comparable<? super C>> Iteration<C> of(C duration, Range<C>... ranges) {
-        return of(duration, asList(ranges));
+        return new Iteration<>(duration, asList(ranges));
     }
 
     public static <C extends Comparable<? super C>> Iteration<C> of(C duration, List<Range<C>> subRanges) {
         return new Iteration<>(duration, subRanges);
     }
 
-    private Iteration(C duration, Collection<Range<C>> ranges) {
+    private Iteration(C duration, List<Range<C>> ranges) {
         this.duration = requireNonNull(duration, "duration");
         this.ranges = Range.toDisjointRanges(ranges);
         Iterations.ensureDurationNotExceeded(this.ranges, duration, it -> it);
